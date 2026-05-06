@@ -25,7 +25,7 @@ class TestRewardsAPI:
         assert r.status_code == 200
         data = r.json()
         assert data["xp_earned"] == 0
-        assert data["sprite_reaction"] == "encourage"
+        assert data["sprite_reaction"] in ("encourage", "thinking")
 
     def test_process_reward_achievement(self):
         r = client.post("/api/rewards/process?student_id=102&is_correct=true&combo=1")

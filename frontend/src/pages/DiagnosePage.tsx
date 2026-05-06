@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuizStore } from '../store/quizStore'
+import { useAppStore } from '../store/appStore'
 
 export function DiagnosePage() {
   const navigate = useNavigate()
+  const sid = useAppStore(s => s.activeStudentId)
   const { currentQuestion, selectedAnswer, feedback, isSubmitting, diagnoseRecords, setQuestion, selectAnswer, setFeedback, setSubmitting, addDiagnoseRecord, clearDiagnoseRecords, resetQuiz } = useQuizStore()
 
   const fetchNext = async () => {
     setSubmitting(true)
     try {
-      const res = await fetch('/api/exercise/next?student_id=1')
+      const res = await fetch(`/api/exercise/next?student_id=${sid}`)
       const data = await res.json()
       setQuestion(data)
     } finally {
@@ -24,7 +26,7 @@ export function DiagnosePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_id: 1,
+          student_id: sid,
           question_id: currentQuestion.question_id,
           answer: selectedAnswer,
         }),
@@ -52,7 +54,7 @@ export function DiagnosePage() {
       const res = await fetch('/api/diagnose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ student_id: 1, records: diagnoseRecords }),
+        body: JSON.stringify({ student_id: sid, records: diagnoseRecords }),
       })
       const report = await res.json()
       resetQuiz()

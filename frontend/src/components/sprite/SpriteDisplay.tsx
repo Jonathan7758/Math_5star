@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 interface SpriteDisplayProps {
   stage: number
   stageName: string
-  reaction: 'idle' | 'happy' | 'encourage' | 'celebrate' | 'excited'
+  reaction: 'idle' | 'happy' | 'encourage' | 'celebrate' | 'excited' | 'thinking'
   skin?: string
   size?: 'sm' | 'md' | 'lg'
   animateIn?: boolean
@@ -17,7 +17,9 @@ const STAGE_NAMES = ['星尘', '星芽', '星苗', '星光', '启明星']
 function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: number; reaction: string; animateIn?: boolean; transitioning?: boolean }) {
   const animClass = reaction === 'celebrate' ? 'animate-bounce' :
     reaction === 'happy' || reaction === 'excited' ? 'animate-bounce-slow' :
-    reaction === 'encourage' ? 'animate-pulse' : 'animate-float'
+    reaction === 'encourage' ? 'animate-pulse' :
+    reaction === 'thinking' ? 'animate-wiggle' :
+    'animate-float'
 
   const entranceClass = animateIn ? 'animate-slide-down-in' : ''
   const transitionClass = transitioning ? 'animate-scale-in' : ''
@@ -27,6 +29,13 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
       <circle cx="15" cy="15" r="3" fill="#fbbf24" className="animate-ping" />
       <circle cx="85" cy="15" r="3" fill="#fbbf24" className="animate-ping" />
       <circle cx="50" cy="90" r="3" fill="#fbbf24" className="animate-ping" />
+    </>
+  ) : null
+
+  const thinkingBubble = reaction === 'thinking' ? (
+    <>
+      <circle cx="5" cy="5" r="4" fill="#475569" opacity="0.5" className="animate-ping" />
+      <circle cx="-2" cy="-10" r="3" fill="#475569" opacity="0.4" className="animate-ping" />
     </>
   ) : null
 
@@ -41,6 +50,7 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
           <circle cx="40" cy="40" r="18" fill="#fef3c7" opacity="0.6"/>
           <circle cx="40" cy="40" r="10" fill="#fbbf24" opacity="0.8"/>
           {stars}
+          {thinkingBubble}
         </svg>
       </div>
     )
@@ -53,6 +63,7 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
           <polygon points="28,40 15,62 41,62" fill="#22c55e" opacity="0.7"/>
           <polygon points="72,40 59,62 85,62" fill="#22c55e" opacity="0.7"/>
           {stars}
+          {thinkingBubble}
         </svg>
       </div>
     )
@@ -67,6 +78,7 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
           <circle cx="68" cy="52" r="6" fill="#eab308" opacity="0.8"/>
           <polygon points="57,20 52,10 62,10" fill="#eab308"/>
           {stars}
+          {thinkingBubble}
         </svg>
       </div>
     )
@@ -83,6 +95,7 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
           <text x="55" y="78" textAnchor="middle" fontSize="10" fill="#a855f7">Δ</text>
           <text x="88" y="78" textAnchor="middle" fontSize="10" fill="#a855f7">∞</text>
           {stars}
+          {thinkingBubble}
         </svg>
       </div>
     )
@@ -96,6 +109,7 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
           <circle cx="80" cy="68" r="20" fill="#fef3c7" opacity="0.7"/>
           <polygon points="80,50 85,62 98,62 88,70 92,82 80,75 68,82 72,70 62,62 75,62" fill="#fbbf24" opacity="0.8"/>
           {stars}
+          {thinkingBubble}
         </svg>
       </div>
     )

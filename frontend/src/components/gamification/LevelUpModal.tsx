@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { playSound } from '../../utils/sound'
+import { hapticTap } from '../../utils/haptic'
 
 interface LevelUpModalProps {
   level: number
@@ -12,6 +13,7 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
   useEffect(() => {
     if (level > 0) {
       playSound('levelup')
+      hapticTap('heavy')
       setShow(true)
       const timer = setTimeout(() => {
         setShow(false)

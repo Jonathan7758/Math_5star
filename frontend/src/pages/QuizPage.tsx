@@ -4,6 +4,8 @@ import { SpriteDisplay } from '../components/sprite/SpriteDisplay'
 import { AchievementToast } from '../components/gamification/AchievementToast'
 import { LevelUpModal } from '../components/gamification/LevelUpModal'
 import { playSound } from '../utils/sound'
+import { hapticCorrect, hapticWrong, hapticCombo } from '../utils/haptic'
+import { useAppStore } from '../store/appStore'
 
 const MAX_HEARTS = 3
 
@@ -12,6 +14,7 @@ export function QuizPage() {
   const location = useLocation()
   const kpId = location.state?.kp_id
   const kpName = location.state?.kp_name
+  const sid = useAppStore(s => s.activeStudentId)
 
   const [question, setQuestion] = useState<any>(null)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
@@ -51,7 +54,7 @@ export function QuizPage() {
   const fetchQuestion = async () => {
     setLoading(true)
     try {
-      const url = kpId ? `/api/exercise/next?student_id=1&kp_id=${kpId}` : '/api/exercise/next?student_id=1'
+      const url = kpId ? `/api/exercise/next?student_id=${sid}&kp_id=${kpId}` : `/api/exercise/next?student_id=${sid}`
       const res = await fetch(url)
       const data = await res.json()
       setQuestion(data)
@@ -72,7 +75,7 @@ export function QuizPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_id: 1,
+          student_id: sid,
           question_id: question.question_id,
           answer: selectedAnswer,
           hint_level_used: hintLevel,
@@ -85,7 +88,7 @@ export function QuizPage() {
       setCombo(newCombo)
       if (newCombo > maxCombo) setMaxCombo(newCombo)
 
-      const rewardRes = await fetch(`/api/rewards/process?student_id=1&is_correct=${data.is_correct}&combo=${newCombo}`)
+      const rewardRes = await fetch(`/api/rewards/process?student_id=${sid}&is_correct=${data.is_correct}&combo=${newCombo}`)
       const rewardData = await rewardRes.json()
       setSpriteReaction(rewardData.sprite_reaction || 'idle')
       if (rewardData.xp_earned > 0) {
@@ -114,11 +117,13 @@ export function QuizPage() {
 
       if (data.is_correct) {
         playSound(newCombo >= 5 ? 'combo' : 'correct')
+        hapticCombo(newCombo)
         setCorrectCount(c => c + 1)
         setQuestionCount((c) => c + 1)
         setHintLevel(0)
       } else {
         playSound('incorrect')
+        hapticWrong()
         setHintLevel(data.hint_level)
         setWrongOnQuestion((w) => w + 1)
       }

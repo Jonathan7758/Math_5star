@@ -1,25 +1,34 @@
 # AGENTS.md — ESF Math 5-Star (启明星)
 
 ## Status
-v0.8 — UX enhanced. Design docs:
+v0.9 — P0-P3 completed. Design docs:
 - `design001.txt` — original project brief (scope, architecture, cost, timeline)
 - `design002.txt` — deep design (UX, sprite, versions, API, tests, architecture)
 - `design003.txt` — UX analysis v0.6 (3.6/10), 20-item improvement roadmap
 - `design004.txt` — UX review round 1 v0.7 (5.4/10, +50%)
 - `design005.txt` — UX review round 2 v0.8 (6.0/10, +67% total)
+- `design006.txt` — UX review round 3 v0.9 (6.6/10, +83% total)
 
-v0.1–v0.8 implemented. Code, build config, and tests exist with 116 backend / 34 frontend tests passing.
+v0.1–v0.9 implemented. Code, build config, and tests exist with 117 backend / 34 frontend tests passing.
 
-## Current version highlights (v0.8)
+## Current version highlights (v0.9)
 - **48 quiz questions** covering all 20 knowledge points (up from 10)
 - **Knowledge graph visualization** in parent dashboard (SVG network by grade level)
+- **Trend line charts** (accuracy + minutes over time, alongside bar chart)
 - **Heatmap click interaction** with detail modal (mastery %, attempts, correct count)
 - **3-slide onboarding** for first-time users (localStorage-gated)
 - **Sprite entrance animation** (fly-in on homepage)
 - **XP fly animation** (+N XP floating up on correct answer)
-- **Daily goal celebration** (fireworks card + sprite celebrate when progress hits 100%)
+- **Daily goal celebration** (Canvas fireworks + sprite celebrate when progress hits 100%)
 - **Sprite stage transition** animation (scale-in when leveling up stage)
-- **CorrectCount bug fixed** (independent state, no more off-by-one in daily summary)
+- **6th sprite reaction** (thinking/book pose with thought bubbles, wiggle animation)
+- **Share card** (daily summary shareable card with stats)
+- **Haptic feedback** (5 vibration patterns via Vibration API)
+- **Offline answer queue** (localStorage cache + sync on reconnect)
+- **Push notification** subscription utilities (VAPID configured)
+- **Multi-student support** (3 profiles, localStorage-persisted, dynamic API calls)
+- **explanations.json** (20 KP detailed explanations with rules, mistakes, tips)
+- **CorrectCount bug fixed** (independent state, no more off-by-one)
 - All four agents + 8 API routers operational
 - SQLite persistence (7 tables) via SharedStore write-through pattern
 

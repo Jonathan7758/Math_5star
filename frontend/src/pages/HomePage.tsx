@@ -5,6 +5,7 @@ import { SpriteDisplay, STAGE_NAMES } from '../components/sprite/SpriteDisplay'
 import { XPBar } from '../components/gamification/XPBar'
 import { StreakCounter } from '../components/gamification/StreakCounter'
 import { DailyGoalRing } from '../components/gamification/DailyGoalRing'
+import { Fireworks } from '../components/vfx/Fireworks'
 import { playSound } from '../utils/sound'
 
 const TIME_GREETINGS: { start: number; end: number; greeting: string; emoji: string }[] = [
@@ -24,7 +25,7 @@ function getTimeGreeting(): { text: string; emoji: string } {
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { student, healthStatus } = useAppStore()
+  const { student, healthStatus, activeStudentId: sid, setActiveStudentId } = useAppStore()
   const [rewards, setRewards] = useState<any>(null)
   const [goalCelebrated, setGoalCelebrated] = useState(false)
   const [showFireworks, setShowFireworks] = useState(false)
@@ -33,7 +34,7 @@ export function HomePage() {
   const greeting = useMemo(() => getTimeGreeting(), [])
 
   const fetchRewards = useCallback(() => {
-    fetch('/api/rewards/status?student_id=1')
+    fetch(`/api/rewards/status?student_id=${sid}`)
       .then(r => r.json())
       .then(data => {
         const newStage = data.sprite_stage ?? 0
@@ -63,6 +64,17 @@ export function HomePage() {
   return (
     <div className="space-y-6 animate-slide-up">
       <header className="text-center pt-4">
+        <div className="flex items-center justify-end mb-2">
+          <select
+            value={sid}
+            onChange={(e) => { setActiveStudentId(Number(e.target.value)); fetchRewards() }}
+            className="text-xs bg-slate-800 rounded-lg px-2 py-1 border border-slate-700 text-slate-300"
+          >
+            <option value={1}>学生 1</option>
+            <option value={2}>学生 2</option>
+            <option value={3}>学生 3</option>
+          </select>
+        </div>
         <SpriteDisplay
           stage={rewards?.sprite_stage ?? 0}
           stageName={rewards?.sprite_name ?? '星尘'}
@@ -80,16 +92,17 @@ export function HomePage() {
       </header>
 
       {isGoalComplete && showFireworks && (
-        <div className="card border border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-center py-3 space-y-1">
-          <div className="flex justify-center gap-1 text-lg">
+        <div className="card border border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-center py-3 space-y-1 relative overflow-hidden">
+          <Fireworks show={showFireworks} />
+          <div className="flex justify-center gap-1 text-lg relative z-10">
             {Array.from({ length: 5 }).map((_, i) => (
               <span key={i} className="animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}>
                 🎉
               </span>
             ))}
           </div>
-          <p className="text-yellow-400 font-bold">今日目标完成！太棒了！</p>
-          <p className="text-slate-400 text-xs">明天继续加油，连胜等你守护～</p>
+          <p className="text-yellow-400 font-bold relative z-10">今日目标完成！太棒了！</p>
+          <p className="text-slate-400 text-xs relative z-10">明天继续加油，连胜等你守护～</p>
         </div>
       )}
 

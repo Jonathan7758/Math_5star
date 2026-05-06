@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuizStore } from '../store/quizStore'
+import { useAppStore } from '../store/appStore'
 
 interface PathNode {
   order: number
@@ -12,6 +13,7 @@ interface PathNode {
 export function LearningPathPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const sid = useAppStore(s => s.activeStudentId)
   const [path, setPath] = useState<PathNode[]>(location.state?.path ?? [])
   const [loading, setLoading] = useState(false)
   const [summary, setSummary] = useState(location.state?.summary ?? '')
@@ -24,7 +26,7 @@ export function LearningPathPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_id: 1,
+          student_id: sid,
           root_causes: location.state?.rootCauses ?? [],
         }),
       })

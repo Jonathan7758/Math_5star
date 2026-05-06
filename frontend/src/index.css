@@ -94,3 +94,14 @@
   animation: xp-fly 1.2s ease-out forwards;
   pointer-events: none;
 }
+
+/* Thinking wiggle animation */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg) translateX(0); }
+  25% { transform: rotate(-2deg) translateX(-2px); }
+  75% { transform: rotate(2deg) translateX(2px); }
+}
+
+.animate-wiggle {
+  animation: wiggle 2s ease-in-out infinite;
+}

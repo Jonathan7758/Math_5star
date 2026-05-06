@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { SpriteDisplay } from '../components/sprite/SpriteDisplay'
+import { ShareCard } from '../components/gamification/ShareCard'
 
 interface SummaryData {
   questionsAnswered: number
@@ -17,6 +19,7 @@ export function DailySummaryPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const summary: SummaryData = location.state || {}
+  const [showShare, setShowShare] = useState(false)
 
   const accuracy = summary.questionsAnswered > 0
     ? Math.round((summary.correctCount / summary.questionsAnswered) * 100)
@@ -87,13 +90,23 @@ export function DailySummaryPage() {
       </p>
 
       <div className="space-y-3">
-        <button onClick={() => navigate('/quiz')} className="btn-primary w-full">
+        <button onClick={() => setShowShare(true)} className="btn-primary w-full">
+          📤 分享成绩
+        </button>
+        <button onClick={() => navigate('/quiz')} className="btn-secondary w-full">
           继续练习
         </button>
         <button onClick={() => navigate('/')} className="btn-secondary w-full">
           返回首页
         </button>
       </div>
+
+      {showShare && (
+        <ShareCard
+          data={summary}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   )
 }

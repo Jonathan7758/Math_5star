@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { MasteryHeatmap } from '../components/parent/MasteryHeatmap'
 import { StatsChart } from '../components/parent/StatsChart'
 import { KnowledgeGraph } from '../components/parent/KnowledgeGraph'
+import { useAppStore } from '../store/appStore'
 
 export function ParentDashboardPage() {
   const navigate = useNavigate()
+  const sid = useAppStore(s => s.activeStudentId)
   const [pin, setPin] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
   const [dashboard, setDashboard] = useState<any>(null)
@@ -20,8 +22,8 @@ export function ParentDashboardPage() {
     setError('')
     try {
       const [dashRes, graphRes] = await Promise.all([
-        fetch('/api/parent/dashboard?student_id=1', { headers: { 'x-parent-pin': pin } }),
-        fetch('/api/parent/graph?student_id=1', { headers: { 'x-parent-pin': pin } }),
+        fetch(`/api/parent/dashboard?student_id=${sid}`, { headers: { 'x-parent-pin': pin } }),
+        fetch(`/api/parent/graph?student_id=${sid}`, { headers: { 'x-parent-pin': pin } }),
       ])
       if (dashRes.ok && graphRes.ok) {
         const dashData = await dashRes.json()
@@ -42,7 +44,7 @@ export function ParentDashboardPage() {
   const handleApprove = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/parent/approve-path?student_id=1', {
+      const res = await fetch(`/api/parent/approve-path?student_id=${sid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-parent-pin': pin },
         body: JSON.stringify({}),

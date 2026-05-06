@@ -125,6 +125,8 @@ class MotivationAgent:
             sprite_reaction = "excited"
         elif is_correct:
             sprite_reaction = "happy"
+        elif not is_correct and current_session_combo == 0:
+            sprite_reaction = "thinking"
         elif not is_correct:
             sprite_reaction = "encourage"
 

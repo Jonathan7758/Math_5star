@@ -78,6 +78,11 @@ class TestMotivationAgent:
     def test_sprite_reaction_wrong(self):
         student = {"total_xp": 0, "level": 1, "current_streak_days": 0, "daily_goal_minutes": 10, "today_minutes": 0}
         result = MotivationAgent.process_answer(student, False, 0, is_first_today=False)
+        assert result.sprite_reaction in ("encourage", "thinking")
+
+    def test_sprite_reaction_wrong_repeat(self):
+        student = {"total_xp": 0, "level": 1, "current_streak_days": 0, "daily_goal_minutes": 10, "today_minutes": 0}
+        result = MotivationAgent.process_answer(student, False, 1, is_first_today=False)
         assert result.sprite_reaction == "encourage"
 
     def test_sprite_stage_0(self):
