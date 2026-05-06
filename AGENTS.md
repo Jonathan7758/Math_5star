@@ -72,7 +72,12 @@ math-home-tutor/
 - **P0 completed**: quiz bank 48 Qs, knowledge graph viz, heatmap click interaction.
 - **P1 completed**: onboarding, sprite entrance/XP fly/goal celebration/stage transition animations.
 - **Full flow working**: diagnose → report → learning path → quiz with hearts/combo/XP fly → daily summary → parent dashboard with graph.
-- **Next step**: Push remaining P2 items (trend charts, offline sync, push notifications, haptic, share card).
+- **Next step**: v1.0 milestone — remaining gaps:
+  - Accessibility audit (aria labels, keyboard nav, screen reader)
+  - Push notification end-to-end (register on server, daily reminder scheduling)
+  - Drag-to-reorder learning path in parent dashboard
+  - E2E Playwright tests (critical user journeys)
+  - LLM pipeline (question generation + explanation generation)
 - **First build commands**:
   - Backend: `pip install -e ".[dev]" && uvicorn backend.main:app --reload`
   - Frontend: `cd frontend && npm install && npm run dev`
