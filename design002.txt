@@ -1,0 +1,1314 @@
+# ESF数学启明星 — 深化设计文档 v2.0
+
+> 基于 design001.txt 的深化设计，覆盖：分阶段版本规划、全量功能模块、用户体验深度分析、
+> 成长精灵形象设计、全量测试用例（含前端）、开发架构细节。
+
+---
+
+## 目录
+1. 用户体验深度分析（12-14岁）
+2. 成长精灵形象设计
+3. 分阶段版本规划 (v0.1 → v2.0)
+4. 全量功能模块与 API 契约
+5. 全量测试用例（后端+前端）
+6. 开发架构深化
+7. 部署方案
+
+---
+
+# 一、用户体验深度分析（12-14岁 / Y8-Y9）
+
+## 1.1 用户画像
+
+### 学生端 — 小明（12岁，Y8，ESF学生）
+- **注意力时长**：单次 5–15 分钟
+- **数学水平**：Y8中游偏下，乘法口诀不熟练，有理数运算是弱点
+- **心理特征**：
+  - 对数学有焦虑感，觉得"自己数学不好"
+  - 喜欢游戏（Roblox、Minecraft），愿意为游戏花时间
+  - 在意即时反馈，不喜欢"做了一堆题才知道对错"
+  - 对"大人说教式"辅导有抵触
+  - 喜欢收集、养成类玩法（宠物、皮肤、成就）
+- **设备**：iPhone 或 安卓手机为主；偶尔用 iPad
+- **使用场景**：放学后、晚饭前、睡前；地铁/巴士通勤中
+
+### 家长端 — 张女士（38岁，非数学专业）
+- **核心诉求**：知道孩子哪块薄弱，不用自己辅导
+- **看板使用频率**：每周1-2次，每次3-5分钟
+- **关键决策**：是否按系统建议安排孩子学习路径
+- **设备**：手机 + 电脑均可
+
+## 1.2 Duolingo式快速奖励模型分析
+
+### Duolingo成功要素（适配数学学习）
+
+| Duolingo机制 | 数学版适配 | 设计要点 |
+|-------------|-----------|---------|
+| **答题→即时反馈** | 提交答案 → 0.3秒内动画+音效反馈 | 正确: 绿色对勾+粒子+精灵跳跃；错误: 温柔摇头+引导文字 |
+| **连胜(Streak)** | 连续学习天数；连续答对题数 | 双重连胜：日连胜(鼓励坚持) + 题连胜(鼓励专注) |
+| **XP与等级** | 每做一题得 XP，累积升级 | XP可视化条，升级弹出动画 |
+| **💎宝石/金币** | 数学星币(Star Coins) | 用于兑换皮肤、道具 |
+| **❤️爱心/生命** | 学习专注力(每局3心) | 错3次→本次练习结束，12小时后恢复 |
+| **每日目标** | 可自选 5/10/15分钟 | 显示完成环，达标记为✅ |
+| **排行榜** | 可选：与"自己昨天"竞赛 | 不引入社交压力，避免比较焦虑 |
+| **宝箱/奖励** | 每次升级开宝箱 | 包含皮肤碎片、星币、保护盾 |
+| **成就徽章** | 完美主义/速算达人/连击王 | 50+可收集成就 |
+| **声音设计** | 答对: 清脆叮咚；答错: 柔和低音；连击: 音阶上升 | 用声音建立条件反射 |
+
+### 关键设计原则（区别于Duolingo）
+
+1. **不允许跳过基础**：知识图谱驱动的路径不可绕行，确保补漏优先
+2. **错误比正确更"值钱"**：错误触发渐进式提示 → 诊断价值 → 学习深度
+3. **不惩罚不知道**：错误不扣太多分，保护学习信心
+4. **妈妈看得懂**：所有界面文案用家长能看懂的语言
+
+## 1.3 学习流程 UX 设计（一屏一题闯关式）
+
+### 完整用户旅程
+
+```
+打开APP → 精灵问候（今日目标环展示）→ 开始学习
+    ↓
+[诊断模式]（首次/定期触发）
+    → 随机抽取知识图谱各节点的代表题
+    → 每道题限时/不限时
+    → 答错不中断，继续下一题
+    → 全部答完后生成断点报告
+    → 精灵： "找到啦！你的有理数需要补一补～"
+    ↓
+[学习模式]（日常使用）
+    → 系统根据规划路径推送题目
+    → 一屏一题：
+        ├─ 顶部：精灵（缩小到侧边，根据对错做表情）
+        ├─ 中间：题目区域
+        ├─ 底部：答题区（输入框/选项按钮）
+        └─ 反馈层（覆盖动画，0.5秒后消失）
+    → 答对：绿光扫过 + 精灵竖大拇指 + XP数字飞出 + 连击计数+1
+    → 答错(第1次)：精灵歪头 + "再想想？" + 不扣心
+    → 答错(第2次)：精灵捧书 + 渐进提示1
+    → 答错(第3次)：完全解析 + 心-1
+    → 3心耗尽：本次学习结束，鼓励"休息一下，明天继续！"
+    ↓
+[每日结束]
+    → 精灵总结：今日XP、最高连击、连胜保持
+    → 每日目标完成环动画
+    → 若触发进化/升级 → 精灵变身动画
+    → 推送："明天见，连胜等你守护！"
+```
+
+### 微交互规范
+
+| 交互 | 动画时长 | 效果 |
+|-----|---------|------|
+| 答对反馈 | 0.3s | 绿色边框脉冲 + 精灵跳跃 + 星子粒子 |
+| 答错反馈 | 0.3s | 橙色边框闪烁 + 精灵歪头 |
+| XP获得 | 0.5s | XP数字从题目区飞到顶部XP条 |
+| 升级 | 1.2s | XP条灌满→爆炸→新等级浮现 |
+| 连击 | 即时 | 连击数字变大、变色（3连击:蓝，5连击:紫，10连击:金）|
+| 精灵进化 | 2.0s | 全屏光效→包裹精灵→新形态展现 |
+| 每日目标达成 | 1.0s | 环填满→对勾→烟花粒子 |
+
+## 1.4 移动端适配要点
+
+- **触控区域**：最小 44×44px（iOS标准）/ 48×48px（Android标准）
+- **单手操作**：核心操作区在屏幕下半1/3
+- **横屏支持**：题目+精灵左右分栏
+- **PWA离线**：静态资源全缓存，做题记录本地暂存，联网后同步
+- **推送通知**：每日学习提醒（可选时段），连胜即将中断提醒
+- **深色模式**：支持，减少晚间学习眼部疲劳
+
+---
+
+# 二、成长精灵形象设计
+
+## 2.1 精灵世界观
+**名字**：启小星 (Qi Xiao Xing)
+**物种**：数学星灵 — 来自知识星云的几何生命体
+**性格**：好奇、调皮、从不批评、热爱数学
+**口头禅**：
+- "数学像星星一样，一颗一颗点亮！"
+- "错一次，离正确又近一步～"
+- "哇！你比昨天更厉害了！"
+
+## 2.2 五阶段进化体系
+
+### Stage 0：星尘 (Star Dust) — 初始形态
+- **外观**：一团跳动的金色星光粒子团，直径约60px
+- **动作**：缓慢旋转，偶尔闪烁，像一个害羞的小火苗
+- **解锁条件**：首次登录
+- **能力**：简单欢迎，引导诊断
+- **配音调性**：清脆、好奇
+
+### Stage 1：星芽 (Star Sprout) — 第7天解锁
+- **外观**：从星尘中长出几何叶片(三角形/六边形)，高约80px
+- **动作**：叶片轻微摇摆，偶尔冒出+、−、×、÷符号
+- **解锁条件**：完成首次诊断 + 累计学习≥3天
+- **能力**：展示"今日目标环"，出题时叶片发光
+- **配音调性**：活泼、有点小骄傲
+
+### Stage 2：星苗 (Star Seedling) — 第21天解锁
+- **外观**：长成小型多边形树，枝叶由几何形状构成（正方体、圆柱体），高约120px
+- **动作**：枝干微微摆动，果实是发光的小数学符号
+- **解锁条件**：掌握≥10个知识点 + 7天连胜
+- **能力**：答错时"掉落"提示果实（渐进提示）
+- **配音调性**：温暖、朋友感
+
+### Stage 3：星光 (Star Light) — 第60天解锁
+- **外观**：悬浮的几何晶体生物，周围环绕轨道式旋转的数学符号（π、√、∑等），高约150px
+- **动作**：优雅旋转，轨道符号随连击数加速
+- **解锁条件**：掌握≥30个知识点 + 30天总学习 + 最高连胜≥14天
+- **能力**：偶尔出"挑战题"（答对双倍XP）
+- **配音调性**：自信、有点小调皮
+
+### Stage 4：启明星 (Morning Star) — 终极形态
+- **外观**：五角星核心 + 星座连线图案 + 光芒粒子效果，高约180px
+- **动作**：稳定悬浮，光芒随呼吸频率明暗变化
+- **解锁条件**：掌握所有Y7-Y9知识点（~100个）+ 累计学习≥100天
+- **能力**：解锁"星图模式"——可查看自己掌握的知识图谱全景
+- **配音调性**：庄重又亲切，像陪伴已久的老师
+
+## 2.3 荣誉徽章体系（50+徽章）
+
+### 分类
+
+| 类别 | 示例徽章 | 获得条件 |
+|-----|---------|---------|
+| 🔥 连胜 | 初露锋芒 / 持之以恒 / 钢铁意志 | 3/7/30/100天连胜 |
+| 🎯 精准 | 百发百中 / 完美主义 / 零失误 | 10/30/50题连对 |
+| ⚡ 速度 | 闪电侠 / 思维风暴 | 限时题全对 |
+| 📚 学识 | 有理数大师 / 几何探索者 / 代数征服者 | 某领域全知识点掌握 |
+| 🎖 毅力 | 百题斩 / 千题破 | 累计做题数量 |
+| 🌟 特殊 | 启明星之约 / 早起鸟 / 夜猫子 | 特定行为 |
+
+## 2.4 精灵互动脚本
+
+```yaml
+# 精灵交互剧本示例
+scenarios:
+  greeting_morning:
+    condition: "当前时间 6:00-12:00"
+    text: "早安！今天的数学冒险开始啦～"
+    animation: stretch_and_sparkle
+
+  greeting_afternoon:
+    condition: "当前时间 12:00-18:00"
+    text: "下午好！来活动一下大脑吧！"
+    animation: bounce
+
+  greeting_evening:
+    condition: "当前时间 18:00-24:00"
+    text: "晚上好！睡前做几题，知识记得牢～"
+    animation: gentle_glow
+
+  streak_at_risk:
+    condition: "今日未学习 && 距当天结束<2小时"
+    text: "你的连胜快断了！5分钟就行，来吧！"
+    animation: worried_wiggle
+
+  perfect_session:
+    condition: "本次学习全对"
+    text: "全对！！你是天才吗？！"
+    animation: super_jump_with_stars
+
+  comeback:
+    condition: "上周活跃度<3天 && 本周再次打开"
+    text: "你回来了！我一直在等你呢～"
+    animation: happy_spin
+```
+
+## 2.5 皮肤商店
+
+| 皮肤名称 | 价格(星币) | 获取方式 | 效果 |
+|---------|-----------|---------|------|
+| 经典金 | 0 | 初始 | 默认金色粒子 |
+| 深海蓝 | 50 | 购买 | 蓝色海洋主题 |
+| 烈焰红 | 50 | 购买 | 红色火焰主题 |
+| 翡翠绿 | 50 | 购买 | 绿色森林主题 |
+| 彩虹光 | 200 | 30天连胜 | 七彩渐变 |
+| 银河 | 500 | 100天总学习 | 星空背景+流星 |
+| 节日限定 | 100 | 节日期间限时 | 对应节日主题 |
+
+---
+
+# 三、分阶段版本规划 (v0.1 → v2.0)
+
+## v0.1 — 骨架搭建（第1-2周）
+
+### 目标
+项目骨架可用，前后端能通信，知识图谱可加载。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 后端脚手架 | FastAPI app + CORS + 日志；SQLite + SQLAlchemy 模型定义；`/api/health` |
+| 知识图谱引擎 | NetworkX加载 knowledge_graph.json v0.1（~20个节点）；BFS/DFS工具函数 |
+| 前端脚手架 | React + Vite + Tailwind + vite-plugin-pwa；路由框架，移动端适配基础布局 |
+| 基础题库 | quiz_bank.json v0.1（每个知识点2道题，手动编写，SymPy验证） |
+| CI/CD | GitHub Actions：lint (ruff + eslint) + test (pytest + vitest) |
+
+### 不包含
+- 任何 Agent 业务逻辑
+- 精灵UI
+- 家长看板
+
+---
+
+## v0.2 — 诊断闭环（第3-4周）
+
+### 目标
+首次完成"答题→诊断→出报告"闭环。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 诊断Agent | BFS根因分析；错误频次聚合；断点优先级排序 |
+| 学生答题界面 | 一屏一题基础版（无精灵）；选项按钮+ 对错反馈文字 |
+| API | `POST /api/diagnose`, `GET /api/exercise/next`, `POST /api/exercise/submit` |
+| 题库扩充 | quiz_bank扩至每知识点5题（含L1/L2） |
+| 诊断报告页 | 断点列表+知识点名称+简单解释文字（无图形） |
+| 测试 | 诊断Agent单元测试(15+)；API集成测试(8+) |
+
+### 不包含
+- 教学/规划/激励Agent
+- 精灵
+- 家长看板
+
+---
+
+## v0.3 — 学习闭环（第5-6周）
+
+### 目标
+完成"诊断→规划路径→按路径学习→完成"闭环。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 规划Agent | 拓扑排序生成学习路径；"先A后B"理由文本生成 |
+| 教学Agent | 从quiz_bank出题；SymPy验证；渐进提示(3级)；错误收集传给诊断Agent |
+| API | `POST /api/plan`, `GET /api/learning/status` |
+| 题库扩充 | quiz_bank扩至每知识点10题，覆盖L1/L2/L3 |
+| 讲解库 | explanations.json v0.1 |
+| 学习路径页 | 路径列表展示，显示已完成/进行中/待学习 |
+| 测试 | 规划Agent单元测试(10+)；教学Agent单元测试(12+)；E2E：完整诊断→学习流 |
+
+### 不包含
+- 激励Agent
+- 精灵UI
+- 家长看板
+
+---
+
+## v0.4 — 激励与精灵 v1（第7-8周）
+
+### 目标
+学生使用体验达到"像多邻国一样愿意每天打开"的水平。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 激励Agent | XP系统；日连胜+题连胜；星币系统；每日目标环 |
+| 精灵UI v1 | Stage 0-1 精灵；答对/答错动画；欢迎语；每日总结 |
+| 精灵状态API | `GET /api/sprite/state`, `POST /api/sprite/customize` |
+| 奖励系统API | `GET /api/rewards/status`, `POST /api/rewards/claim` |
+| 音效系统 | 答对叮咚；答错低音；连击音阶；升级音效 |
+| 前端组件 | XPBar, StreakCounter, DailyGoalRing, AnswerFeedback |
+| 测试 | 激励Agent单元测试(12+)；精灵状态机测试(8+)；组件测试(15+) |
+
+---
+
+## v0.5 — 家长看板（第9-10周）
+
+### 目标
+家长可以查看孩子学习状况，审批学习路径。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 家长看板 | 知识图谱掌握度热力图(echarts/react-vis)；学习时长统计；趋势曲线 |
+| 路径审批 | 查看推荐路径 → 调整优先级 → 确认执行 |
+| 掌握度计算 | 基于正确率+频次+遗忘曲线的加权算法 |
+| API | `GET /api/parent/dashboard`, `POST /api/parent/approve-path` |
+| 家长端认证 | 简单PIN码鉴权 |
+| 测试 | 看板数据聚合测试(8+)；组件测试(10+) |
+
+---
+
+## v0.6 — 打磨与测试（第11-12周）
+
+### 目标
+完善体验，修复bug，准备生产部署。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 精灵全进化 | Stage 2-4 精灵美术+动画（CSS/SVG/Canvas）|
+| 皮肤商店 | 商店UI + 星币购买 + 皮肤切换 |
+| 徽章系统 | 50+徽章定义 + 触发逻辑 + 展示墙 |
+| PWA完善 | 离线缓存策略；推送通知；安装提示优化 |
+| LLM出题管道 | LLM自动生成题目→SymPy验证→人工抽检→入库流水线 |
+| 回归测试 | 全量测试套件通过 |
+| Bug修复 | 真实使用一周的反馈修复 |
+| 用户手册 | 家长版 + 学生版 |
+
+---
+
+## v1.0 — 正式发布（第13-14周）
+
+### 目标
+生产环境上线，家庭日常使用。
+
+### 交付物
+| 模块 | 内容 |
+|------|------|
+| 部署 | Nginx + Gunicorn + Uvicorn；HTTPS(Let's Encrypt)；Systemd守护 |
+| 性能优化 | 前端bundle分析+代码分割；后端API响应<200ms |
+| 监控 | 日志轮转；错误告警(python-json-logger) |
+| 文档 | API文档(Swagger)；部署文档；架构演进文档 |
+
+---
+
+## v2.0 — 未来路线图
+
+| 功能 | 描述 |
+|------|------|
+| 多学生档案 | 一个家长账号管理2-3个孩子 |
+| 自定义出题 | 家长/学生可指定薄弱点强化练习 |
+| AI自由对话讲解 | 疑问可打字问精灵，LLM生成讲解 |
+| 错题本 | 自动归集错题，支持回看重做 |
+| 学习计划日历 | 可视化展示未来一周学习安排 |
+| 多语言 | 中/英切换 |
+| SaaS化 | 用户系统、订阅支付、多租户数据隔离 |
+
+---
+
+# 四、全量功能模块与 API 契约
+
+## 4.1 模块总览
+
+```
+math-home-tutor/
+├── backend/
+│   ├── main.py                    # FastAPI app, CORS, router注册
+│   ├── config.py                  # 环境变量、LLM key、数据库路径
+│   ├── agents/
+│   │   ├── __init__.py
+│   │   ├── diagnostic_agent.py    # 诊断Agent
+│   │   ├── planning_agent.py      # 规划Agent
+│   │   ├── teaching_agent.py      # 教学Agent
+│   │   ├── motivation_agent.py    # 激励Agent
+│   │   └── orchestrator.py        # 协调器：Agent间调度
+│   ├── engine/
+│   │   ├── __init__.py
+│   │   ├── knowledge_graph.py     # NetworkX加载/遍历/查询
+│   │   ├── math_verifier.py       # SymPy验证
+│   │   ├── mastery_calculator.py  # 掌握度加权算法
+│   │   └── question_generator.py  # LLM出题管道
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── student.py             # Student, AnswerRecord
+│   │   ├── sprite.py              # SpriteState, Achievement
+│   │   └── parent.py              # ParentDashboard
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── diagnose.py            # /api/diagnose
+│   │   ├── exercise.py            # /api/exercise/*
+│   │   ├── plan.py                # /api/plan
+│   │   ├── sprite.py              # /api/sprite/*
+│   │   ├── rewards.py             # /api/rewards/*
+│   │   └── parent.py              # /api/parent/*
+│   ├── data/
+│   │   ├── knowledge_graph.json
+│   │   ├── quiz_bank.json
+│   │   └── explanations.json
+│   └── tests/
+│       ├── unit/
+│       │   ├── test_diagnostic_agent.py
+│       │   ├── test_planning_agent.py
+│       │   ├── test_teaching_agent.py
+│       │   ├── test_motivation_agent.py
+│       │   ├── test_knowledge_graph.py
+│       │   ├── test_math_verifier.py
+│       │   ├── test_mastery_calculator.py
+│       │   └── test_models.py
+│       ├── integration/
+│       │   ├── test_api_diagnose.py
+│       │   ├── test_api_exercise.py
+│       │   ├── test_api_plan.py
+│       │   ├── test_api_sprite.py
+│       │   ├── test_api_parent.py
+│       │   └── test_agent_orchestration.py
+│       ├── llm/
+│       │   ├── test_llm_math_accuracy.py
+│       │   ├── test_llm_consistency.py
+│       │   └── test_llm_safety.py
+│       └── fixtures/
+│           ├── sample_graph.json
+│           ├── sample_quiz.json
+│           └── sample_records.json
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── MobileShell.tsx       # 移动端主壳
+│   │   │   │   ├── BottomNav.tsx         # 底部导航
+│   │   │   │   └── TopBar.tsx            # 顶部状态栏
+│   │   │   ├── sprite/
+│   │   │   │   ├── SpriteDisplay.tsx     # 精灵展示组件
+│   │   │   │   ├── SpriteAnimation.tsx   # 精灵动画系统
+│   │   │   │   └── SpriteShop.tsx        # 皮肤商店
+│   │   │   ├── exercise/
+│   │   │   │   ├── QuestionCard.tsx      # 题目卡片
+│   │   │   │   ├── AnswerInput.tsx       # 答案输入区
+│   │   │   │   ├── FeedbackOverlay.tsx   # 对错反馈层
+│   │   │   │   └── HintPanel.tsx         # 渐进提示面板
+│   │   │   ├── gamification/
+│   │   │   │   ├── XPBar.tsx             # XP进度条
+│   │   │   │   ├── StreakCounter.tsx     # 连胜计数
+│   │   │   │   ├── DailyGoalRing.tsx     # 每日目标环
+│   │   │   │   └── AchievementBadge.tsx  # 成就徽章
+│   │   │   ├── diagnose/
+│   │   │   │   └── DiagnoseReport.tsx    # 诊断报告页
+│   │   │   ├── learning/
+│   │   │   │   └── LearningPath.tsx      # 学习路径展示
+│   │   │   ├── parent/
+│   │   │   │   ├── MasteryHeatmap.tsx    # 掌握度热力图
+│   │   │   │   ├── StatsChart.tsx        # 统计图表
+│   │   │   │   └── PathApproval.tsx      # 路径审批
+│   │   │   └── common/
+│   │   │       ├── LoadingSpinner.tsx
+│   │   │       ├── EmptyState.tsx
+│   │   │       └── ErrorBoundary.tsx
+│   │   ├── hooks/
+│   │   │   ├── useApi.ts
+│   │   │   ├── useSprite.ts
+│   │   │   └── useGamification.ts
+│   │   ├── store/
+│   │   │   ├── studentStore.ts           # Zustand store
+│   │   │   ├── spriteStore.ts
+│   │   │   └── learningStore.ts
+│   │   ├── utils/
+│   │   │   ├── sound.ts                  # Web Audio API音效
+│   │   │   ├── haptic.ts                 # 震动反馈
+│   │   │   └── format.ts                 # 格式化工具
+│   │   ├── styles/
+│   │   │   └── global.css                # Tailwind + 自定义动画
+│   │   └── service-worker/
+│   │       └── sw.ts                     # PWA离线策略
+│   ├── public/
+│   │   ├── manifest.json
+│   │   ├── icons/                        # PWA图标集
+│   │   └── sounds/                       # 音效文件
+│   ├── tests/
+│   │   ├── components/
+│   │   │   ├── QuestionCard.test.tsx
+│   │   │   ├── FeedbackOverlay.test.tsx
+│   │   │   ├── SpriteDisplay.test.tsx
+│   │   │   ├── XPBar.test.tsx
+│   │   │   ├── StreakCounter.test.tsx
+│   │   │   ├── DailyGoalRing.test.tsx
+│   │   │   ├── DiagnoseReport.test.tsx
+│   │   │   ├── LearningPath.test.tsx
+│   │   │   ├── MasteryHeatmap.test.tsx
+│   │   │   └── AnswerInput.test.tsx
+│   │   ├── e2e/
+│   │   │   ├── diagnostic-flow.spec.ts   # 诊断→报告完整流
+│   │   │   ├── learning-flow.spec.ts     # 规划→学习完整流
+│   │   │   ├── gamification-flow.spec.ts # 激励系统
+│   │   │   ├── parent-dashboard.spec.ts  # 家长看板
+│   │   │   └── pwa-offline.spec.ts       # PWA离线
+│   │   └── accessibility/
+│   │       └── a11y.test.tsx
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── package.json
+├── knowledge_graph.json
+├── quiz_bank.json
+├── explanations.json
+├── pyproject.toml
+└── README.md
+```
+
+## 4.2 数据模型
+
+### SQLite 表结构
+
+```sql
+-- 学生表
+CREATE TABLE student (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_xp INTEGER DEFAULT 0,
+    level INTEGER DEFAULT 1,
+    star_coins INTEGER DEFAULT 0,
+    current_streak_days INTEGER DEFAULT 0,
+    longest_streak_days INTEGER DEFAULT 0,
+    last_active_date DATE,
+    daily_goal_minutes INTEGER DEFAULT 10
+);
+
+-- 答题记录
+CREATE TABLE answer_record (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    question_id TEXT NOT NULL,
+    knowledge_point_id TEXT NOT NULL,
+    student_answer TEXT NOT NULL,
+    is_correct BOOLEAN NOT NULL,
+    time_spent_seconds REAL,
+    hint_level_used INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+-- 知识点掌握度
+CREATE TABLE mastery (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    knowledge_point_id TEXT NOT NULL,
+    mastery_score REAL DEFAULT 0.0,  -- 0.0 ~ 1.0
+    total_attempts INTEGER DEFAULT 0,
+    correct_attempts INTEGER DEFAULT 0,
+    last_practiced_at TIMESTAMP,
+    UNIQUE(student_id, knowledge_point_id),
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+-- 精灵状态
+CREATE TABLE sprite_state (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL UNIQUE,
+    stage INTEGER DEFAULT 0,         -- 0~4
+    skin TEXT DEFAULT 'classic_gold',
+    accessory TEXT DEFAULT NULL,
+    total_learning_days INTEGER DEFAULT 0,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+-- 成就
+CREATE TABLE achievement (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    achievement_key TEXT NOT NULL,
+    unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, achievement_key),
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+-- 学习路径
+CREATE TABLE learning_path (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    path_json TEXT NOT NULL,         -- JSON: [{kp_id, order, reason}]
+    status TEXT DEFAULT 'pending',   -- pending / approved / completed
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+-- 每日统计（看板用）
+CREATE TABLE daily_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    date DATE NOT NULL,
+    questions_answered INTEGER DEFAULT 0,
+    correct_count INTEGER DEFAULT 0,
+    total_time_minutes REAL DEFAULT 0.0,
+    xp_earned INTEGER DEFAULT 0,
+    UNIQUE(student_id, date),
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+```
+
+## 4.3 完整 API 契约
+
+### 通用响应格式
+```json
+{
+  "success": true,
+  "data": { ... },
+  "error": null
+}
+```
+
+### 诊断相关
+```
+POST /api/diagnose
+  Request:  { "student_id": 1, "records": [{"kp_id": "K01", "is_correct": false}, ...] }
+  Response: { "root_causes": [{"kp_id": "K01", "name": "有理数加法", "priority": 0.85, "reason": "..."}], "graph_snapshot": {...} }
+```
+
+### 练习相关
+```
+GET  /api/exercise/next?student_id=1&kp_id=K01
+  Response: { "question": {...}, "options": [...], "session_xp_bonus": 15 }
+
+POST /api/exercise/submit
+  Request:  { "student_id": 1, "question_id": "Q001", "answer": "3/4", "time_spent": 45.2 }
+  Response: { "is_correct": true, "xp_earned": 10, "streak_count": 5, "hint": null, "sprite_reaction": "happy_jump", "combo_milestone": null }
+```
+
+### 规划相关
+```
+POST /api/plan
+  Request:  { "student_id": 1, "root_causes": [...], "parent_priority_overrides": {...} }
+  Response: { "path": [{"order": 1, "kp_id": "K01", "name": "...", "reason": "..."}, ...], "estimated_sessions": 5 }
+```
+
+### 激励相关
+```
+GET  /api/sprite/state?student_id=1
+  Response: { "stage": 2, "skin": "classic_gold", "evolution_progress": 0.65, "recent_achievements": [...] }
+
+POST /api/sprite/customize
+  Request:  { "student_id": 1, "skin": "deep_blue" }
+  Response: { "success": true, "star_coins_remaining": 150 }
+
+GET  /api/rewards/status?student_id=1
+  Response: { "level": 5, "xp_current": 340, "xp_next": 500, "star_coins": 120, "daily_goal_progress": 0.8, "streak_days": 12, "unclaimed_achievements": [...] }
+
+POST /api/rewards/claim
+  Request:  { "student_id": 1, "achievement_key": "perfect_10" }
+  Response: { "claimed": true, "reward": { "xp_bonus": 50, "star_coins": 10 } }
+```
+
+### 家长看板
+```
+GET  /api/parent/dashboard?student_id=1
+  Response: {
+    "mastery_heatmap": [{"kp_id": "K01", "score": 0.8}, ...],
+    "weekly_stats": [{"date": "...", "minutes": 12, "accuracy": 0.75}, ...],
+    "current_path": [...],
+    "suggestions": ["建议优先攻克有理数减法..."]
+  }
+
+POST /api/parent/approve-path
+  Request:  { "student_id": 1, "path_id": 3, "adjustments": {"K01": 1, "K02": 2} }
+  Response: { "approved": true, "adjusted_path": [...] }
+```
+
+---
+
+# 五、全量测试用例
+
+## 5.1 后端单元测试
+
+### test_knowledge_graph.py (12+ 用例)
+```
+1. test_load_valid_json_graph        — 加载合法JSON，返回DiGraph
+2. test_load_missing_file              — 文件不存在，抛异常
+3. test_load_invalid_json              — JSON格式错误，抛异常
+4. test_get_node_by_id                 — 按ID查找节点
+5. test_get_node_not_found             — 查找不存在的节点
+6. test_get_prerequisites              — 获取某节点的前置依赖
+7. test_get_dependents                 — 获取依赖某节点的下游节点
+8. test_bfs_upstream                   — BFS向上追溯，返回层级
+9. test_bfs_upstream_circular          — 环形依赖检测
+10. test_bfs_upstream_max_depth        — 最大深度限制
+11. test_topological_sort              — 拓扑排序
+12. test_graph_stats                   — 节点数、边数统计
+13. test_isolated_node                 — 无依赖节点的处理
+```
+
+### test_diagnostic_agent.py (18+ 用例)
+```
+1.  test_find_root_causes_single_error    — 单节点错误→回溯到根源
+2.  test_find_root_causes_multiple_errors — 多点错误→聚合排序
+3.  test_aggregate_error_frequency        — 错误频次聚合（3次错 vs 1次错）
+4.  test_priority_sorting                 — 优先级排序（频次高+依赖广的排前）
+5.  test_empty_records                    — 空记录→返回空报告
+6.  test_all_correct_records              — 全对→无断点
+7.  test_partial_correct_in_branch        — 分支上部分对部分错
+8.  test_deep_dependency_chain            — 深层依赖链（A→B→C→D，D错→定位A）
+9.  test_threshold_below_min              — 错误率低于阈值不触发
+10. test_threshold_above_min              — 错误率高于阈值触发
+11. test_dependency_weight                — 依赖强度加权（直接依赖 vs 间接）
+12. test_recent_errors_weighted_higher    — 近期错误权重更高
+13. test_unknown_kp_id                    — 知识图谱中不存在的kp_id
+14. test_large_record_set                 — 大量记录（500条）性能测试
+15. test_report_format                    — 报告格式验证
+16. test_report_contains_reason           — 每个断点附带原因说明
+17. test_bfs_depth_limit                  — BFS深度限制不超时
+18. test_duplicate_kp_in_records          — 同一kp多次记录的去重
+```
+
+### test_planning_agent.py (12+ 用例)
+```
+1.  test_generate_path_single_root        — 单个根因→生成路径
+2.  test_generate_path_multiple_roots     — 多个根因→拓扑排序路径
+3.  test_prerequisite_order               — 前置节点排在依赖节点之前
+4.  test_no_prerequisite_roots_first      — 无前置的节点排在最前
+5.  test_path_includes_reason             — 每个节点附带理由文本
+6.  test_empty_root_causes                — 空根因→返回空路径
+7.  test_circular_dependency_handling     — 环形依赖的优雅处理
+8.  test_estimated_session_count          — 估算学习会话数
+9.  test_parent_override_priority         — 家长覆盖优先级
+10. test_all_nodes_covered                — 所有相关节点都在路径中
+11. test_path_json_serializable           — 输出可JSON序列化
+12. test_independent_branches_parallel    — 无依赖的分支可并行
+```
+
+### test_teaching_agent.py (15+ 用例)
+```
+1.  test_get_next_question                — 按知识点获取下一题
+2.  test_question_has_correct_answer      — 题目包含正确答案字段
+3.  test_verify_correct_answer            — SymPy验证正确
+4.  test_verify_wrong_answer              — SymPy验证错误
+5.  test_verify_equivalent_form           — 等价形式识别（1/2 == 0.5 == 2/4）
+6.  test_hint_level_1                     — 第1次错→提示模板（不给答案）
+7.  test_hint_level_2                     — 第2次错→更具体提示
+8.  test_hint_level_3                     — 第3次错→完整解析
+9.  test_no_more_hints_after_max          — 超过最大提示等级
+10. test_question_not_found_for_kp        — 题库中无对应题目
+11. test_quiz_bank_filter_by_level        — 按L1/L2/L3筛选题目
+12. test_question_randomization           — 同知识点不出连续相同题
+13. test_timeout_handling                 — 答题超时处理
+14. test_invalid_answer_format            — 非法答案格式
+15. test_collect_error_for_diagnostic     — 错误收集传递给诊断Agent
+```
+
+### test_motivation_agent.py (15+ 用例)
+```
+1.  test_xp_calculation_correct           — 正确回答XP计算
+2.  test_xp_wrong_answer                  — 错误回答XP=0
+3.  test_streak_bonus_xp                  — 连击额外XP（3连击+5, 5连击+10）
+4.  test_level_up_check                   — XP跨阈值触发升级
+5.  test_level_up_animation_trigger       — 升级标志位
+6.  test_daily_streak_increment           — 每日首次学习→日连胜+1
+7.  test_daily_streak_no_duplicate        — 同日多次学习不重复计数
+8.  test_daily_streak_break               — 隔日未学习→连胜重置
+9.  test_streak_freeze_usage              — 使用连胜保护盾
+10. test_achievement_trigger              — 特定条件触发成就
+11. test_achievement_no_duplicate         — 成就不可重复获得
+12. test_star_coin_earning                — 升级+成就给星币
+13. test_daily_goal_tracking              — 每日目标进度追踪
+14. test_sprite_evolution_threshold       — 精灵进化条件检测
+15. test_combo_milestone_messages         — 连击里程碑消息
+```
+
+### test_math_verifier.py (10+ 用例)
+```
+1.  test_numeric_equality                 — 数值相等 (3+4 == 7)
+2.  test_algebraic_equality               — 代数等价 (x^2 == x*x)
+3.  test_fraction_equality                — 分数等价 (1/2 == 2/4)
+4.  test_equation_solving                 — 方程解验证
+5.  test_incorrect_solution               — 错误解检测
+6.  test_simplification                   — 表达式化简验证
+7.  test_complex_expression               — 复杂表达式
+8.  test_different_forms                  — 不同形式等价 (sqrt(4) == 2)
+9.  test_sympy_timeout                    — 超时保护
+10. test_parse_invalid_input              — 非法输入处理
+```
+
+## 5.2 后端集成测试
+
+### test_api_diagnose.py (8+ 用例)
+```
+1. test_diagnose_endpoint_success      — POST /api/diagnose 正常返回
+2. test_diagnose_empty_body            — 空请求体→400
+3. test_diagnose_invalid_student       — 不存在的student_id→404
+4. test_diagnose_response_schema       — 响应格式校验
+5. test_diagnose_with_db_records       — 使用数据库中的答题记录
+6. test_diagnose_graph_integration     — 知识图谱加载正确
+7. test_diagnose_performance           — 100条记录响应<500ms
+8. test_diagnose_concurrent            — 并发请求不冲突
+```
+
+### test_api_exercise.py (10+ 用例)
+```
+1.  test_get_next_question             — 获取题目正常
+2.  test_submit_correct_answer         — 提交正确答案
+3.  test_submit_wrong_answer           — 提交错误答案
+4.  test_submit_equivalent_answer      — 提交等价形式
+5.  test_exercise_flow                 — 连续做题流程
+6.  test_xp_accumulates                — XP累加
+7.  test_mastery_updated               — 掌握度更新
+8.  test_hint_level_advances           — 同题多次错误→提示递进
+9.  test_exercise_rate_limit           — 速率限制
+10. test_exercise_offline_queue        — 离线队列同步
+```
+
+### test_agent_orchestration.py (6+ 用例)
+```
+1. test_full_diagnose_to_plan_flow     — 诊断→规划数据流转
+2. test_plan_to_exercise_flow          — 规划→练习流转
+3. test_exercise_to_diagnose_feedback  — 练习结果反馈到诊断
+4. test_motivation_on_exercise         — 练习触发激励
+5. test_orchestrator_error_handling    — 任一Agent失败的处理
+6. test_state_consistency              — 多Agent状态一致性
+```
+
+## 5.3 LLM 专项测试 (200组用例)
+```
+1. Math accuracy (100 cases):
+   — 基础运算、分数、小数、百分数、比例、代数、几何、统计
+   — 每类12-15题覆盖ESF常见错误类型
+
+2. Consistency (50 cases):
+   — 同一输入3次，输出一致性>90%
+   — 温度参数=0时的确定性
+
+3. Safety (30 cases):
+   — 不输出有害内容
+   — 不贬低学生
+   — 不推荐不安全的学习方法
+
+4. Format compliance (20 cases):
+   — 输出符合预设JSON schema
+   — 含中文数学术语正确
+```
+
+## 5.4 前端组件测试 (Vitest + Testing Library)
+
+### QuestionCard.test.tsx (7+)
+```
+1. renders question text and options
+2. highlights selected option
+3. calls onAnswer with selected value
+4. disables interaction when answered
+5. shows correct styling for correct answer
+6. shows correct styling for wrong answer
+7. renders MathJax/KaTeX for math expressions
+```
+
+### FeedbackOverlay.test.tsx (5+)
+```
+1. shows checkmark animation on correct
+2. shows cross animation on incorrect
+3. auto-dismisses after configured duration
+4. renders XP gain text
+5. fires onDismiss callback
+```
+
+### SpriteDisplay.test.tsx (8+)
+```
+1. renders correct sprite for stage 0
+2. renders correct sprite for stage 1-4
+3. plays happy animation on correct prop change
+4. plays sad animation on incorrect prop change
+5. plays celebration animation on level up
+6. applies current skin CSS class
+7. is accessible (has aria-label)
+8. renders in different sizes (sm/md/lg)
+```
+
+### XPBar.test.tsx (6+)
+```
+1. shows current XP / next level XP
+2. bar width proportional to progress
+3. triggers level-up animation when crossing threshold
+4. shows level number
+5. handles XP overflow (more XP than needed for level)
+6. accessible (has role="progressbar")
+```
+
+### StreakCounter.test.tsx (5+)
+```
+1. renders current streak count
+2. animates when streak increases
+3. shows flame icon when streak >= 3
+4. shows frozen icon when streak freeze active
+5. resets animation on streak break
+```
+
+### DailyGoalRing.test.tsx (5+)
+```
+1. renders SVG ring with correct progress
+2. shows checkmark when goal met
+3. shows remaining time label
+4. responds to goal setting change
+5. color changes at milestones (25%/50%/75%/100%)
+```
+
+### DiagnoseReport.test.tsx (5+)
+```
+1. renders root cause list
+2. shows priority indicators
+3. expands to show reason on click
+4. renders graph visualization
+5. shows "no issues found" when empty
+```
+
+### LearningPath.test.tsx (6+)
+```
+1. renders path nodes in order
+2. shows dependency connections
+3. marks completed nodes
+4. marks current node
+5. shows reason tooltip on hover
+6. handles empty path gracefully
+```
+
+### MasteryHeatmap.test.tsx (5+)
+```
+1. renders heatmap grid
+2. color intensity proportional to mastery
+3. shows tooltip with kp name and score
+4. responds to filter by grade/year
+5. legend is visible and correct
+```
+
+### AnswerInput.test.tsx (4+)
+```
+1. renders text input for free-response questions
+2. renders option buttons for multiple-choice
+3. validates non-empty submission
+4. shows MathJax preview for typed expressions
+```
+
+## 5.5 前端 E2E 测试 (Playwright)
+
+### diagnostic-flow.spec.ts (8+)
+```
+1. user opens app → sees welcome screen with sprite
+2. taps "开始诊断" → enters diagnostic quiz
+3. answers all diagnostic questions
+4. sees loading animation during analysis
+5. views diagnostic report with root causes
+6. report shows priority-ranked issues
+7. taps on a root cause → sees explanation
+8. navigates back to home after viewing report
+```
+
+### learning-flow.spec.ts (8+)
+```
+1. navigates to learning path screen
+2. sees ordered list of topics with reasons
+3. taps first topic → enters exercise mode
+4. answers question correctly → sees XP + sprite dance
+5. answers question wrongly → sees hint
+6. answers wrong 3 times → sees full explanation
+7. completes all questions for a topic → sees mastery update
+8. returns to path → sees updated completion status
+```
+
+### gamification-flow.spec.ts (7+)
+```
+1. completes daily goal → sees celebration animation
+2. earns enough XP to level up → sees level-up screen
+3. maintains streak over multiple days → sees streak counter increment
+4. unlocks achievement → notification appears
+5. views achievement collection page
+6. visits sprite shop → purchases skin with star coins
+7. applies purchased skin → sees sprite change appearance
+```
+
+### parent-dashboard.spec.ts (6+)
+```
+1. parent logs in with PIN → sees dashboard
+2. mastery heatmap renders with color coding
+3. taps a knowledge point → sees detail stats
+4. views recommended learning path
+5. adjusts path priority → saves changes
+6. weekly stats chart shows correct data
+```
+
+### pwa-offline.spec.ts (4+)
+```
+1. app loads offline after first visit
+2. shows install prompt on supported browser
+3. caches exercise data for offline availability
+4. syncs offline answers when back online
+```
+
+---
+
+# 六、开发架构深化
+
+## 6.1 Python 后端配置
+
+### pyproject.toml
+```toml
+[project]
+name = "math-home-tutor"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.109",
+    "uvicorn[standard]>=0.27",
+    "sqlalchemy>=2.0",
+    "networkx>=3.2",
+    "sympy>=1.12",
+    "openai>=1.12",
+    "pydantic>=2.6",
+    "httpx>=0.27",
+    "python-json-logger>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+    "httpx>=0.27",
+    "ruff>=0.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+asyncio_mode = "auto"
+```
+
+### 后端命令
+```bash
+# 安装
+cd backend && python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
+
+# 运行开发服务器
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# 运行测试
+pytest -v                              # 全部测试
+pytest backend/tests/unit/ -v          # 仅单元测试
+pytest backend/tests/integration/ -v   # 仅集成测试
+pytest -k "test_diagnostic" -v         # 按名称筛选
+pytest --cov=backend --cov-report=html # 覆盖率报告
+
+# Lint / 格式化
+ruff check backend/
+ruff format backend/
+```
+
+## 6.2 React 前端配置
+
+### package.json (关键字段)
+```json
+{
+  "name": "math-home-tutor-frontend",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3",
+    "react-router-dom": "^6.22",
+    "zustand": "^4.5",
+    "react-query": "^5.24"
+  },
+  "devDependencies": {
+    "vite": "^5.1",
+    "@vitejs/plugin-react": "^4.2",
+    "vite-plugin-pwa": "^0.18",
+    "tailwindcss": "^3.4",
+    "typescript": "^5.3",
+    "vitest": "^1.3",
+    "@testing-library/react": "^14.2",
+    "@testing-library/jest-dom": "^6.4",
+    "playwright": "^1.41",
+    "eslint": "^8.57"
+  }
+}
+```
+
+### vite.config.ts 要点
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: '数学启明星',
+        short_name: '启明星',
+        theme_color: '#f59e0b',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
+        icons: [...]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3}'],
+        runtimeCaching: [{
+          urlPattern: /^\/api\//,
+          handler: 'NetworkFirst',
+          options: { cacheName: 'api-cache', expiration: { maxEntries: 200, maxAgeSeconds: 86400 } }
+        }]
+      }
+    })
+  ],
+  server: {
+    proxy: { '/api': 'http://localhost:8000' }
+  }
+})
+```
+
+### 前端命令
+```bash
+cd frontend
+
+# 开发
+npm run dev                  # 启动Vite开发服务器(5173)
+npm run typecheck              # TypeScript类型检查
+npm run lint                   # ESLint
+
+# 测试
+npm run test                   # Vitest单元/组件测试
+npm run test:watch             # 监听模式
+npm run test:e2e               # Playwright E2E测试
+npm run test:e2e -- --ui       # Playwright UI模式
+
+# 构建
+npm run build                  # 生产构建
+npm run preview                # 预览生产构建
+```
+
+## 6.3 开发工作流
+
+### 分支策略
+```
+main          — 生产分支（保护）
+├── develop   — 开发主分支
+│   ├── feat/diagnostic-agent
+│   ├── feat/planning-agent
+│   ├── feat/motivation-sprite
+│   └── feat/parent-dashboard
+```
+
+### Git 提交规范
+```
+feat: add BFS root cause analysis to diagnostic agent
+fix: correct XP double-counting on streak bonus
+test: add 18 unit tests for diagnostic agent
+docs: update API contract for /api/exercise
+chore: configure ruff and eslint
+```
+
+### PR 前检查清单
+- [ ] `ruff check` 通过
+- [ ] `pytest` 全部通过
+- [ ] `npm run typecheck` 通过
+- [ ] `npm run lint` 通过
+- [ ] `npm run test` 通过
+- [ ] 新功能有对应测试
+- [ ] API变更已更新Swagger文档
+- [ ] 手动测试过关键路径
+
+## 6.4 前端动画技术方案
+
+| 动画类型 | 技术方案 | 说明 |
+|---------|---------|------|
+| CSS过渡 | Tailwind `transition-*` | 按钮hover、颜色变化 |
+| CSS关键帧 | `@keyframes` in global.css | 精灵浮动、粒子效果 |
+| SVG动画 | `<animate>` / SMIL | 每日目标环填充 |
+| Canvas | 2D Canvas API | 复杂粒子系统（升级烟花） |
+| Web Audio | AudioContext + gain节点 | 音效播放、音量渐变 |
+| 手势 | CSS `transform` + `transition` | 答题卡片滑动 |
+
+---
+
+# 七、部署方案
+
+## 7.1 服务器环境（101.96.217.150）
+
+```
+OS:       Ubuntu 24.04 LTS
+Python:   3.12.3
+Node:     v22.22.0
+Git:      2.43.0
+待安装:   Nginx, Certbot (Let's Encrypt)
+```
+
+## 7.2 部署步骤
+
+```bash
+# 1. 安装系统依赖
+apt update && apt install -y nginx certbot python3-certbot-nginx
+
+# 2. 克隆项目
+cd /opt && git clone <repo-url> math-home-tutor
+
+# 3. 后端
+cd /opt/math-home-tutor/backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# 4. 前端构建
+cd /opt/math-home-tutor/frontend
+npm ci
+npm run build
+
+# 5. Nginx配置
+# 前端静态文件由 Nginx 直接 serve
+# /api/* 反向代理到 localhost:8000
+
+# 6. Systemd服务
+# gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+
+# 7. HTTPS
+certbot --nginx -d <your-domain>
+```
+
+## 7.3 Nginx 配置要点
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your-domain.com;
+
+    root /opt/math-home-tutor/frontend/dist;
+    index index.html;
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API反向代理
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120s;
+    }
+
+    # PWA静态资源缓存
+    location ~* \.(js|css|png|jpg|ico|svg|mp3)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+---
+
+# 八、关键决策待确认
+
+在启动开发前，请您就以下关键问题确认或调整：
+
+1. **优先级确认**：是否同意先走 v0.1(骨架) → v0.2(诊断) → v0.3(学习) 的路径，把精灵和激励放到 v0.4？
+2. **知识图谱范围**：首批知识图谱覆盖Y7-Y9，大约多少个知识点？是否需要限制在某个范围内（如Y7-Y8）先做？
+3. **精灵美术**：精灵形象是使用CSS/SVG纯代码渲染，还是需要设计师出图？前者可实现但表现力有限。
+4. **LLM选型**：优先使用 DeepSeek API 还是 OpenAI API？是否需要先配置 Ollama 本地模型作为备选？
+5. **域名**：是否已有域名？目标域名是什么？
+6. **家长看板权限**：是否需要独立的家长账号密码，还是简单PIN码即可？
+7. **语言**：系统界面以中文为主还是中英双语？
+
+---
+
+**文档版本**：v2.0
+**更新日期**：2026-05-05
+**基于**：design001.txt 深化

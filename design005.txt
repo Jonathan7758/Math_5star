@@ -1,0 +1,257 @@
+# UX 复评报告 (第二轮) — P0/P1 改进落实后
+
+> 基于 design004 (2026-05-06) 第二轮改进路线图的逐项复评
+> 审计对象：v0.8 代码库 (2026-05-06)
+> 前序文档：design003 (v0.6 初审) → design004 (v0.7 一复) → design005 (v0.8 二复)
+
+---
+
+# 第一部分：第二轮路线图执行情况
+
+## 1.1 P0 — 必须修复 — 完成度 3/3 ✅
+
+| # | 项目 | 状态 | 实现文件 | 质量评估 |
+|---|------|------|---------|---------|
+| 1 | 题库扩充到 30+ 题 | ✅ | `backend/data/quiz_bank.json` | **优秀** — 从 10 题扩充至 **48 题**，覆盖全部 20 个知识点，每个 KP 至少 1 题（核心 KP 1-3 题）。包含 L1/L2 两级难度，每道题含 hints + explanation。 |
+| 2 | 知识图谱可视化 | ✅ | `frontend/src/components/parent/KnowledgeGraph.tsx` + `backend/routers/parent.py` | **良好** — SVG 网络图，按 Y7/Y8/Y9 分层排列，节点颜色按掌握度着色（红→绿），带箭头边表示前置依赖，支持 hover tooltip 和点击查看详情。新增 `GET /api/parent/graph` 端点。 |
+| 3 | 热力图可点击 | ✅ | `frontend/src/components/parent/MasteryHeatmap.tsx` + `frontend/src/pages/ParentDashboardPage.tsx` | **良好** — 热力图格子改为 button，支持点击选中（白色 ring + scale），底部弹出详情 modal 显示掌握度/总答题/答对 + 进度条。知识图谱节点也可点击联动热力图选中状态。 |
+
+## 1.2 P1 — 体验跃升 — 完成度 5/5 ✅
+
+| # | 项目 | 状态 | 实现文件 | 质量评估 |
+|---|------|------|---------|---------|
+| 4 | 新手指引 (3屏) | ✅ | `frontend/src/components/onboarding/Onboarding.tsx` + `frontend/src/App.tsx` | **良好** — 3 屏引导：欢迎→诊断→红心系统。全屏 overlay (backdrop-blur)，scale-in 入场动画。3 屏点状指示器。支持"下一步"和"跳过引导"。localStorage 记录完成状态，仅首次打开显示。 |
+| 5 | 精灵入场动画 | ✅ | `frontend/src/components/sprite/SpriteDisplay.tsx:15` + `frontend/src/pages/HomePage.tsx:46` | **良好** — SpriteDisplay 新增 `animateIn` prop，首页传入 animateIn=true。精灵首次渲染时从屏幕上方滑入（slide-down-in 动画）。 |
+| 6 | XP 飞出动画 | ✅ | `frontend/src/pages/QuizPage.tsx:44-49` + `frontend/src/index.css:87-93` | **良好** — 答对时在反馈区右上角显示 "+N XP" 文字，1.2s 向上飘动 + 放大 + 淡出（xp-fly keyframe）。每次答对用 xpFlyKey 自增强制重新渲染动画。 |
+| 7 | 每日目标完成庆祝 | ✅ | `frontend/src/pages/HomePage.tsx:31-40,96-105` | **良好** — 检测 daily_goal_progress >= 100 触发庆祝模式：精灵 reaction="celebrate"（动画星星 + bounce），金色庆祝卡片（渐变背景 + 5 个 bouncing 🎉 emoji + "今日目标完成！太棒了！" 文案），播放 achievement 音效，4s 后自动消失。goalCelebrated 标志防止重复触发。 |
+| 8 | 精灵变身动画 | ✅ | `frontend/src/components/sprite/SpriteDisplay.tsx:97-103` + `frontend/src/pages/QuizPage.tsx:82-83` | **良好** — SpriteDisplay 新增 `prevStage` prop。当 prevStage != stage 时触发 scale-in 过渡动画（600ms）。QuizPage 在 sprite_stage 变化时保存 prevStage 状态。 |
+
+## 1.3 Bug 修复
+
+| 项目 | 状态 | 实现 |
+|------|------|------|
+| DailySummaryPage correctCount 边缘情况 | ✅ | `frontend/src/pages/QuizPage.tsx:23,97` | **已修复** — 新增独立 `correctCount` state 变量，答对时 +1。在 handleContinue 和所有 navigate 调用中改用 `correctCount` 而非之前的派生计算。消除 hearts=0 跳转时 correctCount 偏少 1 的问题。 |
+
+---
+
+# 第二部分：场景复评 (第三轮)
+
+## 2.1 孩子的一天
+
+### 7:00 早晨唤醒 — 仍为 0/10 (未触及)
+无变化。推送通知、精灵提醒语、桌面角标仍未实现。
+
+---
+
+### 8:00 首次打开 App — 由 7/10 → 9/10 (+2)
+| 触点 | 状态 | 变化 |
+|------|------|------|
+| 精灵入场动画 | ✅ 新 | **新增** — fly-in slide-down 动画 |
+| Onboarding 引导 | ✅ 新 | **新增** — 3 屏全屏引导 |
+| 其余触点 | — | 维持 v0.7 水平 |
+
+**代码位置**: `SpriteDisplay.tsx:15` (animateIn), `Onboarding.tsx:1-90` (引导)
+
+---
+
+### 8:05 开始今日学习 — 5/10 → 6/10 (+1)
+| 触点 | 状态 | 变化 |
+|------|------|------|
+| 首次使用引导 | ✅ 新 | **新增** — onboarding 引导用户理解诊断→学习→练习流程 |
+| 其余触点 | — | 维持 v0.7 水平 |
+
+---
+
+### 8:06 答对一题 — 8/10 → 9/10 (+1)
+| 触点 | 状态 | 变化 |
+|------|------|------|
+| XP 飞出动画 | ✅ 新 | **新增** — "+N XP" 向上飘动的飞行动画 |
+| 精灵变身动画 | ✅ 新 | **新增** — stage 变化时 scale-in 过渡 |
+| 其余触点 | — | 维持 v0.7 水平 |
+
+**代码位置**: `QuizPage.tsx:44-49` (XP 飞行动画), `SpriteDisplay.tsx:97-103` (变身动画)
+
+---
+
+### 8:07~8:09 答错场景 — 维持 v0.7 水平
+无新变化。红心系统、渐进提示、最后机会警告已在 v0.7 完成。
+
+---
+
+### 8:12 每日目标达成 — 4/10 → 8/10 (+4)
+| 触点 | 状态 | 变化 |
+|------|------|------|
+| 精灵庆祝 | ⚠️ 新 | **改善** — 每日目标达成时触发 celebrate reaction |
+| 庆祝卡片 | ✅ 新 | **新增** — 金色渐变卡片 + bouncing emoji + 祝贺文案 |
+| 庆祝音效 | ✅ 新 | **新增** — 播放 achievement 音效 |
+
+**代码位置**: `HomePage.tsx:31-40` (goalCelebrated 检测), `HomePage.tsx:96-105` (庆祝卡片)
+
+---
+
+### 8:15 升级 — 维持 7/10
+无新变化。LevelUpModal 已在 v0.7 完成，精灵变身动画在答题场景中体现。
+
+---
+
+### 8:20 每日总结 — 维持 7/10
+无新变化。correctCount bug 已修复，数据更准确。
+
+---
+
+### 22:00 晚间提醒 — 仍为 1/10 (未触及)
+无变化。
+
+---
+
+## 2.2 家长的一天
+
+### 20:00 首次打开家长看板 — 7/10 → 9/10 (+2)
+| 触点 | 状态 | 变化 |
+|------|------|------|
+| 知识图谱可视化 | ✅ 新 | **新增** — SVG 网络图，按年级分层，颜色表示掌握度 |
+| 热力图点击交互 | ✅ 新 | **新增** — 点击格子弹出详情 modal |
+| 图谱节点点击 | ✅ 新 | **新增** — 点击节点关联热力图选中 + 弹出详情 |
+
+**代码位置**: `KnowledgeGraph.tsx:1-199`, `MasteryHeatmap.tsx:1-70`, `ParentDashboardPage.tsx:164-221`
+
+---
+
+### 20:02~20:05 — 维持 v0.7 水平
+趋势图、导出报告等长期项目未触及。
+
+---
+
+# 第三部分：更新后的 UX 评分
+
+## 3.1 横向能力评分
+
+| 维度 | design003 | design004 | **design005** | Δ 本轮 | 评语 |
+|------|-----------|-----------|---------------|--------|------|
+| 即时反馈 | 7 | 8 | **9** | +1 | XP 飞行动画强化了正反馈感知 |
+| 精灵情感连接 | 5 | 5 | **7** | +2 | 入场动画 + 变身过渡 + 目标达成庆祝联动 |
+| 游戏化激励 | 4 | 8 | **9** | +1 | 目标达成庆祝填补了最后一块激励拼图 |
+| 个性化 | 2 | 2 | **3** | +1 | 新手指引提供了首次使用的个性化体验 |
+| 容错与引导 | 5 | 8 | **9** | +1 | 新手指引解释红心系统和学习流程 |
+| 移动端体验 | 6 | 6 | **6** | 0 | 仍缺触觉反馈、离线同步 |
+| 数据可视化 | 4 | 5 | **8** | +3 | 知识图谱 + 热力图点击交互 + 详情 modal |
+| 无障碍 | 2 | 2 | **2** | 0 | 仅少量 aria 标签 |
+| 性能 | 6 | 6 | **6** | 0 | 无变化 |
+| 数据可靠 | 2 | 8 | **8** | 0 | 维持 SQLite 持久化，题库数据更丰富 |
+
+**各维度平均**: design003 3.8 → design004 5.8 → **design005 6.7**
+
+## 3.2 场景评分汇总
+
+| 场景 | design003 | design004 | **design005** | Δ |
+|------|-----------|-----------|---------------|-----|
+| 7:00 早晨唤醒 | 0 | 0 | **0** | 0 |
+| 8:00 首次打开 | 5 | 7 | **9** | +2 |
+| 8:05 开始学习 | 5 | 5 | **6** | +1 |
+| 8:06 答对一题 | 6 | 8 | **9** | +1 |
+| 8:07 答错一题 | 7 | 8 | **8** | 0 |
+| 8:08 答错第二次 | 5 | 7 | **7** | 0 |
+| 8:09 答错第三次 | 3 | 6 | **6** | 0 |
+| 8:12 每日目标达成 | 3 | 4 | **8** | +4 |
+| 8:15 升级 | 4 | 7 | **7** | 0 |
+| 8:20 每日总结 | 0 | 7 | **7** | 0 |
+| 22:00 晚间提醒 | 1 | 1 | **1** | 0 |
+| **孩子平均** | **3.55** | **5.45** | **6.18** | **+0.73** |
+| 20:00 看板首开 | 4 | 7 | **9** | +2 |
+| 20:02 查看建议 | 4 | 5 | **5** | 0 |
+| 20:03 审批路径 | 4 | 5 | **5** | 0 |
+| 20:05 长期趋势 | 2 | 2 | **2** | 0 |
+| **家长平均** | **3.50** | **4.75** | **5.25** | **+0.50** |
+
+## 3.3 综合评分演进
+
+| 维度 | design003 (v0.6) | design004 (v0.7) | **design005 (v0.8)** |
+|------|-------------------|-------------------|----------------------|
+| 孩子一日体验 | 4.2 | 5.5 | **6.2** |
+| 家长一日体验 | 3.0 | 4.8 | **5.3** |
+| 横向能力均值 | 3.8 | 5.8 | **6.7** |
+| **综合体验** | **3.6/10** | **5.4/10** | **6.0/10** |
+
+**三版迭代总结**: 3.6 → 5.4 → **6.0** (+67% total improvement)
+
+---
+
+# 第四部分：剩余差距 — 通往 7.0
+
+## 4.1 仍为空白的时段
+
+| 时段 | 当前分 | 所需 |
+|------|--------|------|
+| 7:00 早晨唤醒 | 0/10 | Push 通知 + 精灵提醒 |
+| 22:00 晚间提醒 | 1/10 | 晚间问候 + 未学习检测 + 连胜中断警告 |
+
+## 4.2 可快速提升的项目 (ROI 高)
+
+| # | 项目 | 当前缺口 | 预计工时 |
+|---|------|---------|---------|
+| 1 | 家长看板趋势折线图 | StatsChart 仅柱状图，无 accuracy/minutes 折线趋势 | 2h |
+| 2 | 精灵"思考"反应状态 | 第 6 种 reaction (thinking/book pose) | 1h |
+| 3 | 每日目标达成的烟花粒子 | Canvas 粒子效果 | 2h |
+| 4 | 精灵变身完成动画 | 变身后特殊庆祝动画 | 1h |
+| 5 | 分享成绩卡片 | 每日总结生成可分享图片 | 3h |
+
+## 4.3 中期项目 (未变)
+
+| # | 项目 |
+|---|------|
+| 6 | 触觉反馈 (haptic.ts) |
+| 7 | 离线同步队列 |
+| 8 | 推送通知 |
+| 9 | 路径进度追踪 (进行中/已完成) |
+| 10 | PWA 角标 |
+
+## 4.4 长期项目 (未变)
+
+| # | 项目 |
+|---|------|
+| 11 | LLM 出题管道 |
+| 12 | 多学生档案 |
+| 13 | 中英双语切换 |
+| 14 | E2E Playwright 测试 |
+| 15 | 无障碍完善 |
+
+---
+
+# 第五部分：文件变更清单
+
+## 新增文件
+| 文件 | 描述 |
+|------|------|
+| `frontend/src/components/onboarding/Onboarding.tsx` | 3 屏新手指引组件 |
+| `frontend/src/components/parent/KnowledgeGraph.tsx` | SVG 知识图谱网络可视化 |
+
+## 修改文件
+| 文件 | 变更 |
+|------|------|
+| `backend/data/quiz_bank.json` | 10→48 题，覆盖全部 20 KP |
+| `backend/routers/parent.py` | 新增 GraphNode/GraphEdge/GraphResponse 模型 + `GET /api/parent/graph` 端点 |
+| `frontend/src/App.tsx` | 集成 Onboarding 首次引导逻辑 |
+| `frontend/src/index.css` | 新增 @keyframes xp-fly 动画 |
+| `frontend/src/components/sprite/SpriteDisplay.tsx` | 新增 animateIn/prevStage props + 入场/变身动画 |
+| `frontend/src/components/gamification/AchievementToast.tsx` | 修复 sound import 路径 (`../../utils/sound`) |
+| `frontend/src/components/parent/MasteryHeatmap.tsx` | 新增 onItemClick/selectedKp props + hover 效果 |
+| `frontend/src/pages/HomePage.tsx` | 精灵入场动画 + 每日目标达成庆祝 |
+| `frontend/src/pages/QuizPage.tsx` | XP 飞行动画 + 精灵变身 prevStage + correctCount bug 修复 |
+| `frontend/src/pages/ParentDashboardPage.tsx` | 知识图谱集成 + 热力图/KP 详情 modal + 并行数据加载 |
+
+---
+
+## 测试验证
+
+```
+Backend:  116 passed, 17 warnings (clean DB)
+Frontend: 34 passed (8 test files)
+Build:    TypeScript + Vite build successful
+```
+
+---
+
+**文档版本**: v1.0
+**更新日期**: 2026-05-06
+**三版追溯**: design003 (v0.6 初审, 3.6/10) → design004 (v0.7 一复, 5.4/10) → design005 (v0.8 二复, 6.0/10)
+**下一份**: design006 — 第三轮改进落实后复评 (目标: ≥7.0/10)

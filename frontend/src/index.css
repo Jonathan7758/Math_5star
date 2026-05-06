@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 245 158 11;
+  }
+  body {
+    @apply antialiased;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-150 min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  .card {
+    @apply bg-slate-800 rounded-2xl p-4 shadow-lg;
+  }
+}
+
+/* Sprite float animation */
+@keyframes sprite-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.sprite-float {
+  animation: sprite-float 3s ease-in-out infinite;
+}
+
+/* Toast slide animations */
+@keyframes slide-down-in {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-up-out {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-slide-down-in {
+  animation: slide-down-in 0.4s ease-out forwards;
+}
+
+.animate-slide-up-out {
+  animation: slide-up-out 0.4s ease-in forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out forwards;
+}
+
+/* Answer feedback animations */
+@keyframes correct-flash {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+  100% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+}
+
+@keyframes wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.correct-flash {
+  animation: correct-flash 0.6s ease-out;
+}
+
+.wrong-shake {
+  animation: wrong-shake 0.4s ease-in-out;
+}
+
+/* XP fly animation */
+@keyframes xp-fly {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+}
+
+.animate-xp-fly {
+  animation: xp-fly 1.2s ease-out forwards;
+  pointer-events: none;
+}
