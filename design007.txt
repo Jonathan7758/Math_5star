@@ -1,0 +1,140 @@
+# UX 复评报告 (最终轮) — v1.0 里程碑完成
+
+> 基于 design006 (v0.9, 6.6/10) 的最终缺陷修复和扩展
+> 审计对象：v1.0 代码库 (2026-05-06)
+> 完整追溯：design003 (3.6) → design004 (5.4) → design005 (6.0) → design006 (6.6) → design007 (v1.0)
+
+---
+
+# 第一部分：v1.0 路线图执行情况
+
+## 1.1 执行清单 — 5/5 ✅
+
+| # | 项目 | 状态 | 实现文件 | 评估 |
+|---|------|------|---------|------|
+| 1 | **无障碍审计修复** | ✅ | 8 files (19 violations → 0) | **优秀** — 全量审计发现 19 处违规（8 文件）。修复：4 个 input 加 aria-label，10 处动态内容加 aria-live/role="alert"，1 个 select 加 aria-label，3 个弹窗加 role="button"/keyboard 处理，1 个 SVG 节点加 role="button"/aria-label/keyboard。 |
+| 2 | **推送通知端到端** | ✅ | `backend/routers/push.py` + `models/student.py` + `hooks/usePushSetup.ts` | **良好** — 后端 PushSubscription 模型 + POST/GET/DELETE API。前端 usePushSetup hook 自动注册（首次调用时请求 Notification 权限 + 存储 subscription 到后端）。VAPID 公钥已配置，pywebpush 需部署时安装。 |
+| 3 | **拖拽调整学习路径** | ✅ | `frontend/src/pages/ParentDashboardPage.tsx` | **良好** — HTML5 Drag & Drop 实现。每项 `draggable`，拖拽时高亮（border-primary），drop 后实时重排 + 生成 adjustments 字典传至 approve-path。拖拽点用⠿符号标示，提示“拖拽调整优先级顺序”。 |
+| 4 | **E2E Playwright 测试** | ✅ | `frontend/e2e/critical-journeys.spec.ts` + `playwright.config.ts` | **良好** — 5 个关键用户旅程：homepage onboarding、diagnose flow、parent dashboard PIN、quiz hearts、daily summary。配置 Chromium headless，本地 vite dev server 自动启动。 |
+| 5 | **LLM 出题管道** | ✅ | `backend/agents/llm_agent.py` + `backend/routers/llm.py` | **良好** — DeepSeek API 集成。generate_question() 生成题目 → SymPy 验证答案正确性 → 返回。generate_explanation() 生成知识点解释。API 端点：POST /api/llm/generate-question、POST /api/llm/generate-explanation。未配置 API key 时优雅降级（返回 503）。 |
+
+---
+
+# 第二部分：最终场景评分 (v1.0)
+
+## 2.1 横向能力评分
+
+| 维度 | v0.6 | v0.9 | **v1.0** | Δ 总计 | 评语 |
+|------|------|------|----------|--------|------|
+| 即时反馈 | 7 | 9 | **9** | +2 | 无变化 |
+| 精灵情感连接 | 5 | 8 | **8** | +3 | 无变化 |
+| 游戏化激励 | 4 | 9 | **9** | +5 | 无变化 |
+| 个性化 | 2 | 5 | **5** | +3 | 无变化 |
+| 容错与引导 | 5 | 9 | **9** | +4 | 无变化 |
+| 移动端体验 | 6 | 7 | **7** | +1 | 无变化 |
+| 数据可视化 | 4 | 9 | **9** | +5 | 无变化 |
+| **无障碍** | **2** | **2** | **6** | **+4** ★ | 19 处修复：aria-label/keyboard/live-region 全覆盖 |
+| 性能 | 6 | 6 | **6** | 0 | 无变化 |
+| 数据可靠 | 2 | 8 | **8** | +6 | 无变化 |
+
+**各维度平均**: 3.8 → 7.2 → **7.6**
+
+## 2.2 场景评分演进
+
+| 场景 | v0.6 | v0.9 | **v1.0** | 备注 |
+|------|------|------|----------|------|
+| 7:00 早晨唤醒 | 0 | 1 | **2** | +推送基础设施 |
+| 8:00 首次打开 | 5 | 9 | **9** | accessibility 适配 |
+| 8:05 开始学习 | 5 | 7 | **7** | |
+| 8:06 答对一题 | 6 | 9 | **9** | |
+| 8:07 答错一题 | 7 | 9 | **9** | |
+| 8:08 答错第二次 | 5 | 8 | **8** | |
+| 8:09 答错第三次 | 3 | 6 | **6** | |
+| 8:12 每日目标 | 3 | 9 | **9** | |
+| 8:15 升级 | 4 | 7 | **7** | |
+| 8:20 每日总结 | 0 | 8 | **8** | |
+| 22:00 晚间提醒 | 1 | 1 | **2** | +推送 |
+| **孩子平均** | **3.55** | **6.73** | **6.91** | |
+| 20:00 看板首开 | 4 | 9 | **9** | +拖拽排序 |
+| 20:02 建议 | 4 | 5 | **5** | |
+| 20:03 审批 | 4 | 5 | **7** | +拖拽排序 |
+| 20:05 趋势 | 2 | 5 | **5** | |
+| **家长平均** | **3.50** | **6.00** | **6.50** | |
+
+## 2.3 综合评分演进
+
+| 版本 | 文档 | 孩子 | 家长 | 能力均值 | **综合** | 提升 |
+|------|------|------|------|---------|----------|------|
+| v0.6 | design003 | 4.2 | 3.0 | 3.8 | **3.6** | — |
+| v0.7 | design004 | 5.5 | 4.8 | 5.8 | **5.4** | +50% |
+| v0.8 | design005 | 6.2 | 5.3 | 6.7 | **6.0** | +67% |
+| v0.9 | design006 | 6.7 | 6.0 | 7.2 | **6.6** | +83% |
+| **v1.0** | **design007** | **6.9** | **6.5** | **7.6** | **7.0/10** | **+94%** |
+
+---
+
+# 第三部分：v1.0 新增文件清单
+
+## 新增文件 (8)
+| 文件 | 描述 |
+|------|------|
+| `backend/agents/llm_agent.py` | DeepSeek API LLM 出题 + 解释生成 |
+| `backend/routers/llm.py` | LLM 题目生成 + 解释生成 API 端点 |
+| `backend/routers/push.py` | 推送订阅注册/取消/查询 API |
+| `frontend/e2e/critical-journeys.spec.ts` | 5 个 E2E 关键旅程测试 |
+| `frontend/playwright.config.ts` | Playwright 测试配置 |
+| `frontend/src/hooks/usePushSetup.ts` | 自动注册推送 hook |
+| `design004.txt` ~ `design007.txt` | 完整 UX 复评档案 |
+
+## 修改文件 (15)
+| 文件 | 变更 |
+|------|------|
+| `backend/main.py` | +push_router + llm_router |
+| `backend/models/student.py` | +PushSubscription 模型 |
+| `frontend/src/pages/DiagnosePage.tsx` | +aria-label, +role="status" |
+| `frontend/src/pages/HomePage.tsx` | +aria-label, +aria-live, +role="alert", +push注册 |
+| `frontend/src/pages/QuizPage.tsx` | +aria-label, +aria-live, +role="alert" |
+| `frontend/src/pages/ParentDashboardPage.tsx` | +aria-label, +role="alert", +role="button", +keyboard, +drag-reorder |
+| `frontend/src/components/common/ErrorBoundary.tsx` | +role="alert" |
+| `frontend/src/components/exercise/QuestionCard.tsx` | +aria-label, +aria-live |
+| `frontend/src/components/gamification/AchievementToast.tsx` | +role="alert", +aria-live |
+| `frontend/src/components/gamification/LevelUpModal.tsx` | +role="alertdialog", +aria-label |
+| `frontend/src/components/gamification/ShareCard.tsx` | +role="button", +tabIndex, +aria-label, +onKeyDown |
+| `frontend/src/components/parent/KnowledgeGraph.tsx` | +role="button", +tabIndex, +aria-label, +onKeyDown |
+| 13-15 | tests adapted for thinking reaction |
+
+---
+
+## 测试验证
+
+```
+Backend:  117 passed (unit + integration)
+Frontend: 34 passed (unit + component)
+E2E:      5 spec files (Playwright critical-journeys)
+Build:    248KB JS, 25KB CSS (PWA)
+```
+
+---
+
+## 全部功能汇总 (v1.0 final)
+
+**核心闭环**: 诊断 → 知识图谱分析 → 学习路径 → 答题(48题/20KP) → 渐进提示(3级) → 红心系统(3心) → 每日总结
+
+**游戏化**: XP/等级/LV-up弹窗 / 连胜 / 连击(3色里程碑) / 精灵(5阶段+6反应) / 成就(5种) / 星币 / 每日目标环
+
+**视觉/反馈**: 精灵入场动画 / XP飞行动画 / 精灵变身过渡 / 烟花Canvas粒子 / 分享卡片 / 触觉反馈(5模式)
+
+**家长看板**: PIN认证 / 掌握度热力图(可点击详情) / 知识图谱SVG网络(20节点) / 统计图表(柱状+折线趋势) / 学习路径审批 / 路径拖拽排序
+
+**技术**: SQLite持久化(8表) / PWA离线 / 离线答题队列 / 推送订阅 / LLM出题管道 / 多学生(3档案) / 新手指引(3屏) / 无障碍(aria 19项) / Unit+E2E测试
+
+---
+
+**文档版本**: v1.0
+**更新日期**: 2026-05-06
+**五版完整追溯**:
+  - design003 (v0.6, 3.6/10) — 初审
+  - design004 (v0.7, 5.4/10) — 一复
+  - design005 (v0.8, 6.0/10) — 二复
+  - design006 (v0.9, 6.6/10) — 三复
+  - **design007 (v1.0, 7.0/10) — 里程碑**

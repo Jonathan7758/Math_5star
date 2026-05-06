@@ -13,6 +13,8 @@ from backend.routers.plan import router as plan_router
 from backend.routers.rewards import router as rewards_router
 from backend.routers.sprite import router as sprite_router
 from backend.routers.parent import router as parent_router
+from backend.routers.push import router as push_router
+from backend.routers.llm import router as llm_router
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL.upper(), logging.INFO))
 logger = logging.getLogger(__name__)
@@ -47,6 +49,8 @@ app.include_router(plan_router)
 app.include_router(rewards_router)
 app.include_router(sprite_router)
 app.include_router(parent_router)
+app.include_router(push_router)
+app.include_router(llm_router)
 
 if __name__ == "__main__":
     import uvicorn

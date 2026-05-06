@@ -133,22 +133,23 @@ export function DiagnosePage() {
             onChange={(e) => selectAnswer(e.target.value)}
             disabled={!!feedback}
             placeholder="输入答案..."
+            aria-label="输入答案"
             className="w-full p-3 rounded-xl border bg-slate-900 min-h-[48px] text-white text-lg text-center border-slate-700 focus:border-primary-500"
           />
         )}
 
         {feedback?.is_correct && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm" role="status">
             正确！
           </div>
         )}
         {feedback?.hint && !feedback.is_correct && (
-          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 text-orange-400 text-sm">
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 text-orange-400 text-sm" role="status">
             {feedback.hint}
           </div>
         )}
         {feedback && !feedback.is_correct && feedback.explanation && (
-          <div className="bg-slate-700/50 rounded-xl p-3 text-slate-300 text-sm">
+          <div className="bg-slate-700/50 rounded-xl p-3 text-slate-300 text-sm" role="status">
             {feedback.explanation}
           </div>
         )}

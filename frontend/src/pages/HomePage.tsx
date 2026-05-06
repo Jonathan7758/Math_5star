@@ -7,6 +7,7 @@ import { StreakCounter } from '../components/gamification/StreakCounter'
 import { DailyGoalRing } from '../components/gamification/DailyGoalRing'
 import { Fireworks } from '../components/vfx/Fireworks'
 import { playSound } from '../utils/sound'
+import { registerPushIfNew } from '../hooks/usePushSetup'
 
 const TIME_GREETINGS: { start: number; end: number; greeting: string; emoji: string }[] = [
   { start: 6, end: 12, greeting: '早安！今天的数学冒险开始啦～', emoji: '🌅' },
@@ -56,6 +57,7 @@ export function HomePage() {
 
   useEffect(() => {
     fetchRewards()
+    registerPushIfNew().catch(() => {})
   }, [])
 
   const isGoalComplete = rewards?.daily_goal_progress >= 100
@@ -68,6 +70,7 @@ export function HomePage() {
           <select
             value={sid}
             onChange={(e) => { setActiveStudentId(Number(e.target.value)); fetchRewards() }}
+            aria-label="选择学生"
             className="text-xs bg-slate-800 rounded-lg px-2 py-1 border border-slate-700 text-slate-300"
           >
             <option value={1}>学生 1</option>
@@ -92,7 +95,7 @@ export function HomePage() {
       </header>
 
       {isGoalComplete && showFireworks && (
-        <div className="card border border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-center py-3 space-y-1 relative overflow-hidden">
+        <div className="card border border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 text-center py-3 space-y-1 relative overflow-hidden" role="alert">
           <Fireworks show={showFireworks} />
           <div className="flex justify-center gap-1 text-lg relative z-10">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -124,7 +127,7 @@ export function HomePage() {
       )}
 
       {!rewards && (
-        <div className="card text-center py-4">
+        <div className="card text-center py-4" aria-live="polite" aria-busy="true">
           <p className="text-slate-400 text-sm">加载中...</p>
         </div>
       )}

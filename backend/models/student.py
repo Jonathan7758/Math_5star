@@ -82,3 +82,17 @@ class DailyStats(Base):
     )
 
     student = relationship("Student", back_populates="daily_stats")
+
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscription"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(Integer, ForeignKey("student.id"), nullable=False)
+    endpoint = Column(Text, nullable=False)
+    p256dh = Column(String, nullable=False)
+    auth = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+    student = relationship("Student")

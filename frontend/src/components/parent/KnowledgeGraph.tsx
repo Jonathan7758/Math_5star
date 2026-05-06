@@ -143,7 +143,11 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
             <g
               key={ln.node.kp_id}
               className="cursor-pointer transition-transform hover:scale-105"
+              role="button"
+              tabIndex={0}
+              aria-label={`${ln.node.kp_name}: ${Math.round(ln.node.score * 100)}% mastery`}
               onClick={() => onNodeClick(ln.node)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNodeClick(ln.node) } }}
               onMouseEnter={(e) => {
                 const rect = (e.currentTarget as SVGGElement).closest('svg')?.getBoundingClientRect()
                 if (rect) {

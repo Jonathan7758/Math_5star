@@ -33,7 +33,7 @@ export function QuestionCard({ question, selectedAnswer, onSelect, disabled, fee
     <div className={`card space-y-4 transition-all ${
       isCorrect === true ? 'ring-2 ring-green-500 animate-correct-flash' :
       isCorrect === false ? 'ring-2 ring-orange-500 animate-wrong-shake' : ''
-    }`}>
+    }`} aria-live="polite">
       <div className="flex items-center gap-2 text-xs text-slate-400">
         <span className="bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-full">
           Lv.{question.level}
@@ -80,6 +80,7 @@ export function QuestionCard({ question, selectedAnswer, onSelect, disabled, fee
             onChange={(e) => onSelect(e.target.value)}
             disabled={disabled}
             placeholder="Type your answer..."
+            aria-label="Type your answer"
             className={`w-full p-3 rounded-xl border bg-slate-900 min-h-[48px] text-white text-lg text-center transition-colors ${
               isCorrect === true ? 'border-green-500 bg-green-500/10' :
               isCorrect === false ? 'border-orange-500 bg-orange-500/10' :

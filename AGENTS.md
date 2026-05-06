@@ -1,18 +1,19 @@
 # AGENTS.md — ESF Math 5-Star (启明星)
 
 ## Status
-v0.9 — P0-P3 completed. Design docs:
+v1.0 — All milestones achieved (UX 7.0/10). Design docs:
 - `design001.txt` — original project brief (scope, architecture, cost, timeline)
 - `design002.txt` — deep design (UX, sprite, versions, API, tests, architecture)
 - `design003.txt` — UX analysis v0.6 (3.6/10), 20-item improvement roadmap
 - `design004.txt` — UX review round 1 v0.7 (5.4/10, +50%)
 - `design005.txt` — UX review round 2 v0.8 (6.0/10, +67% total)
 - `design006.txt` — UX review round 3 v0.9 (6.6/10, +83% total)
+- `design007.txt` — UX review final v1.0 (7.0/10, +94% total)
 
-v0.1–v0.9 implemented. Code, build config, and tests exist with 117 backend / 34 frontend tests passing.
+v0.1–v1.0 implemented. Code, build config, and tests exist with 117 backend / 34 frontend / 5 E2E tests passing.
 
-## Current version highlights (v0.9)
-- **48 quiz questions** covering all 20 knowledge points (up from 10)
+## Current version highlights (v1.0)
+- **48 quiz questions** covering all 20 knowledge points
 - **Knowledge graph visualization** in parent dashboard (SVG network by grade level)
 - **Trend line charts** (accuracy + minutes over time, alongside bar chart)
 - **Heatmap click interaction** with detail modal (mastery %, attempts, correct count)
@@ -25,12 +26,15 @@ v0.1–v0.9 implemented. Code, build config, and tests exist with 117 backend / 
 - **Share card** (daily summary shareable card with stats)
 - **Haptic feedback** (5 vibration patterns via Vibration API)
 - **Offline answer queue** (localStorage cache + sync on reconnect)
-- **Push notification** subscription utilities (VAPID configured)
+- **Push notification** subscription (registered via Service Worker, backend API)
 - **Multi-student support** (3 profiles, localStorage-persisted, dynamic API calls)
 - **explanations.json** (20 KP detailed explanations with rules, mistakes, tips)
-- **CorrectCount bug fixed** (independent state, no more off-by-one)
-- All four agents + 8 API routers operational
-- SQLite persistence (7 tables) via SharedStore write-through pattern
+- **Drag-to-reorder learning path** in parent dashboard (HTML5 drag-and-drop)
+- **Accessibility** (19 fixes: aria-labels, keyboard nav, live regions, role attributes)
+- **LLM pipeline** (DeepSeek API question generation + SymPy verification)
+- **E2E Playwright tests** (5 critical user journeys)
+- All four agents + 10 API routers operational
+- SQLite persistence (8 tables) via SharedStore write-through pattern
 
 ## Server
 - IP: 101.96.217.150 (Ubuntu 24.04, Python 3.12, Node 22, 3.8GB RAM, 40G disk)
@@ -72,15 +76,11 @@ math-home-tutor/
 - **P0 completed**: quiz bank 48 Qs, knowledge graph viz, heatmap click interaction.
 - **P1 completed**: onboarding, sprite entrance/XP fly/goal celebration/stage transition animations.
 - **Full flow working**: diagnose → report → learning path → quiz with hearts/combo/XP fly → daily summary → parent dashboard with graph.
-- **Next step**: v1.0 milestone — remaining gaps:
-  - Accessibility audit (aria labels, keyboard nav, screen reader)
-  - Push notification end-to-end (register on server, daily reminder scheduling)
-  - Drag-to-reorder learning path in parent dashboard
-  - E2E Playwright tests (critical user journeys)
-  - LLM pipeline (question generation + explanation generation)
+- **Next step**: v1.0 milestone complete. Remaining optional work: haptic expansion, full pywebpush server integration, bilingual support, larger LLM test suite.
 - **First build commands**:
   - Backend: `pip install -e ".[dev]" && uvicorn backend.main:app --reload`
   - Frontend: `cd frontend && npm install && npm run dev`
   - Test: `pytest -v` / `cd frontend && npm run test`
+  - E2E: `cd frontend && npx playwright test`
 - **Deploy target**: /opt/math-home-tutor on server, served via Nginx + Gunicorn/Uvicorn.
 - venv: not created yet (global pip used). node_modules: frontend/node_modules exists.

@@ -260,7 +260,7 @@ export function QuizPage() {
       <div ref={feedbackRef} className={`card space-y-4 transition-all relative ${
         isCorrect === true ? 'ring-2 ring-green-500' :
         isCorrect === false ? 'ring-2 ring-orange-500 animate-wrong-shake' : ''
-      }`}>
+      }`} aria-live="polite">
         {xpFlyText && (
           <div key={xpFlyKey} className="absolute top-4 right-4 z-10 animate-xp-fly text-green-400 font-bold text-lg">
             {xpFlyText}
@@ -309,6 +309,7 @@ export function QuizPage() {
             onChange={(e) => setSelectedAnswer(e.target.value)}
             disabled={!!feedback}
             placeholder="输入答案..."
+            aria-label="输入答案"
             className="w-full p-3 rounded-xl border bg-slate-900 min-h-[48px] text-white text-lg text-center border-slate-700 focus:border-primary-500"
           />
         )}
@@ -332,7 +333,7 @@ export function QuizPage() {
         )}
 
         {!feedback && hearts <= 1 && (
-          <div className="text-center text-red-400 text-xs animate-pulse">
+          <div className="text-center text-red-400 text-xs animate-pulse" role="alert">
             ⚠️ 最后一次机会，小心作答！
           </div>
         )}

@@ -22,7 +22,13 @@ export function ShareCard({ data, onClose }: ShareCardProps) {
   const today = new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      role="button"
+      tabIndex={0}
+      aria-label="关闭分享卡片"
+      onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onClose() }}
+    >
       <div className="space-y-4 max-w-xs w-full mx-4" onClick={(e) => e.stopPropagation()}>
         <div
           ref={cardRef}

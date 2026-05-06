@@ -16,6 +16,8 @@ export function ParentDashboardPage() {
   const [error, setError] = useState('')
   const [selectedKp, setSelectedKp] = useState<string | null>(null)
   const [detailModal, setDetailModal] = useState<any>(null)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [pathAdjustments, setPathAdjustments] = useState<Record<string, number>>({})
 
   const login = async () => {
     setLoading(true)
@@ -47,7 +49,7 @@ export function ParentDashboardPage() {
       const res = await fetch(`/api/parent/approve-path?student_id=${sid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-parent-pin': pin },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ adjustments: pathAdjustments }),
       })
       if (res.ok) {
         setDashboard((prev: any) => ({ ...prev, suggestions: [...prev.suggestions, '✅ 学习路径已确认'] }))
@@ -85,9 +87,10 @@ export function ParentDashboardPage() {
             onChange={(e) => setPin(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && login()}
             placeholder="输入PIN码"
+            aria-label="输入PIN码"
             className="w-full p-3 rounded-xl border bg-slate-900 min-h-[48px] text-white text-lg text-center border-slate-700 focus:border-primary-500"
           />
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          {error && <p className="text-red-400 text-sm text-center" role="alert">{error}</p>}
           <button onClick={login} disabled={loading || !pin} className="btn-primary w-full">
             {loading ? '验证中...' : '进入看板'}
           </button>
@@ -152,15 +155,39 @@ export function ParentDashboardPage() {
           {dashboard.current_path && dashboard.current_path.length > 0 && (
             <div className="card">
               <h2 className="font-semibold text-white mb-3">当前学习路径</h2>
+              <p className="text-xs text-slate-500 mb-2">拖拽调整优先级顺序</p>
               <div className="space-y-2">
-                {dashboard.current_path.map((pn: any) => (
-                  <div key={pn.kp_id} className="flex items-center gap-2 text-sm">
+                {dashboard.current_path.map((pn: any, i: number) => (
+                  <div
+                    key={pn.kp_id}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      if (dragIndex === null || dragIndex === i) return
+                      const newPath = [...dashboard.current_path]
+                      const [moved] = newPath.splice(dragIndex, 1)
+                      newPath.splice(i, 0, moved)
+                      const updates: Record<string, number> = {}
+                      newPath.forEach((p, idx) => { updates[p.kp_id] = idx + 1 })
+                      setPathAdjustments(updates)
+                      setDashboard((prev: any) => ({ ...prev, current_path: newPath }))
+                      setDragIndex(null)
+                    }}
+                    className={`flex items-center gap-2 text-sm p-2 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
+                      dragIndex === i ? 'border-primary-500 bg-primary-500/10' : 'border-slate-700 hover:border-slate-500'
+                    } ${Object.keys(pathAdjustments).length > 0 ? 'border-dashed' : ''}`}
+                  >
+                    <span className="text-slate-500 text-xs min-w-[16px]">⠿</span>
                     <span className="text-primary-400 font-bold min-w-[24px]">{pn.order}.</span>
                     <span className="text-white">{pn.kp_name}</span>
                     <span className="text-slate-500 text-xs ml-auto">{pn.reason}</span>
                   </div>
                 ))}
               </div>
+              {Object.keys(pathAdjustments).length > 0 && (
+                <p className="text-yellow-400 text-xs mt-2">已调整顺序，点击"确认路径"保存</p>
+              )}
               <button onClick={handleApprove} disabled={loading} className="btn-primary w-full mt-3 text-sm">
                 {loading ? '处理中...' : '确认路径'}
               </button>
@@ -185,11 +212,17 @@ export function ParentDashboardPage() {
       )}
 
       {detailModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => { setDetailModal(null); setSelectedKp(null) }}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+          role="button"
+          tabIndex={0}
+          aria-label="关闭详情"
+          onClick={() => { setDetailModal(null); setSelectedKp(null) }}
+          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') { setDetailModal(null); setSelectedKp(null) } }}
+        >
           <div className="card w-full max-w-sm mx-4 mb-8 sm:mb-0 space-y-3 animate-slide-up" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500 px-2 py-0.5 rounded-full bg-slate-700">{detailModal.grade || 'Y7'}</span>
-              <button onClick={() => { setDetailModal(null); setSelectedKp(null) }} className="text-slate-400 text-lg min-h-[44px] min-w-[44px] flex items-center justify-center">✕</button>
+              <button onClick={() => { setDetailModal(null); setSelectedKp(null) }} aria-label="关闭" className="text-slate-400 text-lg min-h-[44px] min-w-[44px] flex items-center justify-center">✕</button>
             </div>
             <h3 className="text-lg font-bold text-white">{detailModal.kp_name}</h3>
             <div className="grid grid-cols-3 gap-3">

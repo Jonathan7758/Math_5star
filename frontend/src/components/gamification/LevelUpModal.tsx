@@ -26,7 +26,7 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="alertdialog" aria-label={`升级到 Lv.${level}`}>
       <div className="card text-center space-y-4 animate-scale-in max-w-xs w-full mx-4">
         <div className="text-6xl animate-bounce">🎉</div>
         <div>

@@ -19,7 +19,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-dvh p-6 text-center">
+        <div className="flex flex-col items-center justify-center min-h-dvh p-6 text-center" role="alert">
           <div className="text-4xl mb-4">😵</div>
           <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
           <p className="text-slate-400 text-sm mb-4">

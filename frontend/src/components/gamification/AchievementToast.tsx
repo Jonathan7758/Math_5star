@@ -48,6 +48,8 @@ export function AchievementToast({ achievementKey, achievementName, achievementD
       className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm ${
         hiding ? 'animate-slide-up-out opacity-0' : 'animate-slide-down-in'
       }`}
+      role="alert"
+      aria-live="assertive"
     >
       <div className="card bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/40 shadow-lg shadow-yellow-500/10">
         <div className="flex items-center gap-3">
