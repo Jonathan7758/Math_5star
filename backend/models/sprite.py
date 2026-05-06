@@ -13,6 +13,8 @@ class SpriteState(Base):
     skin = Column(String, default="classic_gold")
     accessory = Column(String, nullable=True)
     total_learning_days = Column(Integer, default=0)
+    owned_skins = Column(String, nullable=True, default="classic_gold")
+    streak_freeze = Column(Integer, default=0)
 
     student = relationship("Student", back_populates="sprite")
 

@@ -142,7 +142,7 @@ export function HomePage() {
         <button onClick={() => navigate('/parent')} className="card flex flex-col items-center py-6 hover:bg-slate-700 transition-colors">
           <span className="text-3xl mb-2">📊</span><span className="font-semibold text-sm">家长看板</span><span className="text-slate-500 text-xs mt-1">Dashboard</span>
         </button>
-        <button className="card flex flex-col items-center py-6 hover:bg-slate-700 transition-colors">
+        <button onClick={() => navigate('/achievements')} className="card flex flex-col items-center py-6 hover:bg-slate-700 transition-colors">
           <span className="text-3xl mb-2">🏆</span><span className="font-semibold text-sm">成就徽章</span><span className="text-slate-500 text-xs mt-1">Badges</span>
         </button>
       </div>

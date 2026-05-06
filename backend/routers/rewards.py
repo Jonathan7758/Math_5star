@@ -21,6 +21,7 @@ class RewardStatusResponse(BaseModel):
     daily_goal_minutes: int
     sprite_stage: int
     sprite_name: str
+    unlocked_achievements: list[str] = []
 
 
 @router.get("/api/rewards/status", response_model=RewardStatusResponse)
@@ -40,6 +41,8 @@ async def rewards_status(student_id: int):
     today_minutes = today_stat["minutes"] if today_stat else 0
     progress = min(today_minutes / daily_minutes, 1.0) if daily_minutes > 0 else 0
 
+    unlocked = store.get_unlocked_achievements(student_id)
+
     return RewardStatusResponse(
         student_id=student_id,
         level=level,
@@ -51,6 +54,7 @@ async def rewards_status(student_id: int):
         daily_goal_minutes=daily_minutes,
         sprite_stage=sprite_info["stage"],
         sprite_name=sprite_info["stage_name"],
+        unlocked_achievements=sorted(list(unlocked)) if unlocked else [],
     )
 
 
@@ -75,14 +79,26 @@ async def process_reward(student_id: int, is_correct: bool, combo: int = 0, time
         "today_minutes": 0,
     }
 
+    daily_stats_records = store.get_weekly_stats(student_id)
+    today_stats = next((r for r in daily_stats_records if r["date"] == today_str), None)
+    today_minutes = today_stats["minutes"] if today_stats else 0
+    daily_goal_met = today_minutes >= (student.daily_goal_minutes or 10)
+
+    mastered = store._count_mastered(student_id)
+
     result = MotivationAgent.process_answer(
         student_dict, is_correct, combo, time_spent,
         is_first_today=is_first,
         unlocked_achievements=unlocked,
+        total_correct=(student.total_correct or 0) + (1 if is_correct else 0),
+        mastered_count=mastered,
+        daily_goal_met=daily_goal_met or daily_goal_met,
     )
 
     store.update_xp(student_id, result.xp_earned)
     store.update_coins(student_id, result.star_coins_earned)
+    if is_correct:
+        store.increment_correct(student_id)
     if result.level_up:
         store.update_xp(student_id, 0, result.new_level)
     if result.streak_updated:

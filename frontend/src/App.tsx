@@ -8,6 +8,8 @@ import { LearningPathPage } from './pages/LearningPathPage'
 import { QuizPage } from './pages/QuizPage'
 import { ParentDashboardPage } from './pages/ParentDashboardPage'
 import { DailySummaryPage } from './pages/DailySummaryPage'
+import { AchievementsPage } from './pages/AchievementsPage'
+import { SpriteShop } from './pages/SpriteShop'
 import { Onboarding } from './components/onboarding/Onboarding'
 
 export default function App() {
@@ -34,6 +36,8 @@ export default function App() {
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/parent" element={<ParentDashboardPage />} />
         <Route path="/daily-summary" element={<DailySummaryPage />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/shop" element={<SpriteShop />} />
       </Routes>
     </MobileShell>
   )

@@ -111,8 +111,16 @@ class SharedStore:
         student = s.query(Student).filter(Student.id == student_id).first()
         if student:
             student.total_xp = (student.total_xp or 0) + xp_earned
+            student.total_attempts = (student.total_attempts or 0) + 1
             if level is not None:
                 student.level = level
+            s.commit()
+
+    def increment_correct(self, student_id: int):
+        s = self._session()
+        student = s.query(Student).filter(Student.id == student_id).first()
+        if student:
+            student.total_correct = (student.total_correct or 0) + 1
             s.commit()
 
     def update_coins(self, student_id: int, coins: int):

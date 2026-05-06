@@ -23,6 +23,8 @@ class Student(Base):
     last_active_date = Column(Date, nullable=True)
     daily_goal_minutes = Column(Integer, default=10)
     locale = Column(String, default="zh")
+    total_attempts = Column(Integer, default=0)
+    total_correct = Column(Integer, default=0)
 
     sprite = relationship("SpriteState", back_populates="student", uselist=False)
     answer_records = relationship("AnswerRecord", back_populates="student")
