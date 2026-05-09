@@ -9,10 +9,13 @@ v1.0 — All milestones achieved (UX 7.0/10). Design docs:
 - `design005.txt` — UX review round 2 v0.8 (6.0/10, +67% total)
 - `design006.txt` — UX review round 3 v0.9 (6.6/10, +83% total)
 - `design007.txt` — UX review final v1.0 (7.0/10, +94% total)
+- `design008.txt` — GAP filled v1.1 (7.3/10)
+- `design009.txt` — v2.0 interaction & quiz design deep analysis
 
 v0.1–v1.0 implemented. Code, build config, and tests exist with 117 backend / 34 frontend / 5 E2E tests passing.
 
-## Current version highlights (v1.0)
+## Current version highlights (v2.1)
+- **Flutter + Flame Android/web app** with game engine
 - **48 quiz questions** covering all 20 knowledge points
 - **Knowledge graph visualization** in parent dashboard (SVG network by grade level)
 - **Trend line charts** (accuracy + minutes over time, alongside bar chart)
@@ -71,12 +74,28 @@ math-home-tutor/
 - Knowledge graph is loaded as a NetworkX DiGraph; BFS traces failure roots along `depends_on` edges.
 - Tests follow TDD: Pytest (unit + integration), Playwright/Cypress (E2E), plus a custom LLM math-accuracy test suite.
 
-## Session checkpoint (2026-05-06)
-- **v0.8 UX review complete**: design005.txt shows 6.0/10 overall (up from 3.6 in v0.6).
-- **P0 completed**: quiz bank 48 Qs, knowledge graph viz, heatmap click interaction.
-- **P1 completed**: onboarding, sprite entrance/XP fly/goal celebration/stage transition animations.
-- **Full flow working**: diagnose → report → learning path → quiz with hearts/combo/XP fly → daily summary → parent dashboard with graph.
-- **Next step**: v1.0 milestone complete. Remaining optional work: haptic expansion, full pywebpush server integration, bilingual support, larger LLM test suite.
+## Session checkpoint (2026-05-08)
+- **v2.0 progress**: Flutter + Flame Android/web app built.
+  - Flutter 3.29.3, JDK 17, Android SDK 34, NDK 27
+  - APK: 21MB release at http://101.96.217.150/flutter/app-release.apk
+  - Web: http://101.96.217.150/flutter/
+  - Screens: Home (sprite + stats + 4 cards), Diagnose, Quiz (hearts/combo), Parent (PIN 1234), Settings (version check + server config + student profile)
+  - Game engine: Flame MathSprite with tap interaction, 5 evolution stages, particle effects
+  - Storyteller: 8 themes, `/api/exercise/story` + `/api/exercise/themes`
+  - Version API: `/api/health/version` for in-app update checks
+  - Nginx: React at `/`, Flutter at `/flutter/` with `^~` prefix priority
+- **v2.1**: Multi-agent review system + P0-P4 UX improvements + auto-upgrade
+  - P0: Sound system (Web Audio API synthesized tones)
+  - P1-P4: A11y Semantics, React sprite fix, report visualization, storyteller integration
+  - Auto-upgrade: Settings page checks `/api/health/version`, downloads APK, triggers installer
+  - Shorebird: CLI 1.6.98 installed and logged in
+  - **Shorebird Release 1.0.0+1 published** + Patch 1 tested (v1.0.1)
+  - Hot update flow: `shorebird patch android` → users get update on next app open
+  - v1.0.1 deployed (version_code=2) on server
+  - APK updated: quiz_screen 4.8 → 6.1, Semantics + storyteller + QuestionCard integration
+- **v2.1 fix**: 12 quiz answers corrected (SymPy verification of all 200 Qs). Root cause: `MathVerifier.verify(question_text, answer)` was comparing question text as student answer. Fixed with `verify_question_answer()` that extracts math expressions and computes true answers.
+- **v1.1.1**: All GAPs filled. Quiz bank 200 Qs. Component refactoring done.
+- **Tests**: 132 backend / 44 UX API / 34 frontend all pass.
 - **First build commands**:
   - Backend: `pip install -e ".[dev]" && uvicorn backend.main:app --reload`
   - Frontend: `cd frontend && npm install && npm run dev`

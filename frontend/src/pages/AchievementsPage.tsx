@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import { BackButton } from '../components/common/BackButton'
+import { groupBy } from '../utils/array'
 
 interface AchievementInfo {
   key: string
@@ -42,25 +45,18 @@ export function AchievementsPage() {
     }).finally(() => setLoading(false))
   }, [sid])
 
-  const grouped: Record<string, AchievementInfo[]> = {}
-  for (const a of achievements) {
-    const cat = a.category || 'special'
-    if (!grouped[cat]) grouped[cat] = []
-    grouped[cat].push(a)
-  }
+  const grouped = groupBy(achievements, (a: AchievementInfo) => a.category || 'special')
 
   return (
     <div className="space-y-5 animate-slide-up pb-8">
       <header className="flex items-center justify-between pt-2">
-        <button onClick={() => navigate(-1)} className="text-slate-400 text-sm min-h-[44px] px-2">← 返回</button>
+        <BackButton />
         <h1 className="text-lg font-bold">成就徽章</h1>
         <div className="w-8" />
       </header>
 
       {loading ? (
-        <div className="card text-center py-8">
-          <p className="text-slate-400 text-sm">加载中...</p>
-        </div>
+        <LoadingSpinner />
       ) : (
         <div className="space-y-5">
           <div className="text-center py-2">

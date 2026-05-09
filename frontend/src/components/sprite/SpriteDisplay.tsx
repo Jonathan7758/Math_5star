@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 interface SpriteDisplayProps {
   stage: number
@@ -13,6 +13,21 @@ interface SpriteDisplayProps {
 const STAGE_SIZE: Record<string, string> = { sm: 'w-12 h-12 text-2xl', md: 'w-20 h-20 text-4xl', lg: 'w-32 h-32 text-6xl' }
 
 const STAGE_NAMES = ['星尘', '星芽', '星苗', '星光', '启明星']
+
+const TAP_MESSAGES = [
+  { text: '嗨！我是启小星~', emoji: '👋' },
+  { text: '你今天真棒！加油！', emoji: '✨' },
+  { text: '每道题都是成长的机会！', emoji: '🌱' },
+  { text: '休息一下也没关系~', emoji: '☕' },
+  { text: '数学很有意思对吧？', emoji: '😊' },
+  { text: '你是最棒的学习者！', emoji: '💪' },
+  { text: '我会一直陪着你的~', emoji: '🤗' },
+  { text: '答对题目我就能长大了！', emoji: '🌟' },
+  { text: '戳我干嘛呀~嘿嘿', emoji: '😆' },
+  { text: '一起点亮知识的星空吧！', emoji: '⭐' },
+  { text: '做题前深呼吸一下~', emoji: '🧘' },
+  { text: '别忘了我在这里哦！', emoji: '💖' },
+]
 
 function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: number; reaction: string; animateIn?: boolean; transitioning?: boolean }) {
   const animClass = reaction === 'celebrate' ? 'animate-bounce' :
@@ -119,21 +134,83 @@ function SpriteSVG({ stage, reaction, animateIn, transitioning }: { stage: numbe
 
 export function SpriteDisplay({ stage, stageName, reaction = 'idle', size = 'md', animateIn = false, prevStage }: SpriteDisplayProps) {
   const [showTransition, setShowTransition] = useState(false)
+  const [tapBubble, setTapBubble] = useState<{ text: string; emoji: string } | null>(null)
+  const [tapAnim, setTapAnim] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (prevStage !== undefined && prevStage !== stage) {
       setShowTransition(true)
-      const timer = setTimeout(() => setShowTransition(false), 600)
+      const timer = setTimeout(() => setShowTransition(false), 400)
       return () => clearTimeout(timer)
     }
   }, [stage, prevStage])
 
+  // Auto-dismiss tap bubble
+  useEffect(() => {
+    if (tapBubble) {
+      const timer = setTimeout(() => setTapBubble(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [tapBubble])
+
+  const handleTap = useCallback(() => {
+    const msg = TAP_MESSAGES[Math.floor(Math.random() * TAP_MESSAGES.length)]
+    setTapBubble(msg)
+    setTapAnim(true)
+    setTimeout(() => setTapAnim(false), 300)
+  }, [])
+
+  // Attach native event listeners via ref for reliable mobile touch
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+
+    const onInteraction = (e: Event) => {
+      e.preventDefault()
+      e.stopPropagation()
+      handleTap()
+    }
+
+    el.addEventListener('click', onInteraction)
+    el.addEventListener('touchend', onInteraction, { passive: false })
+
+    return () => {
+      el.removeEventListener('click', onInteraction)
+      el.removeEventListener('touchend', onInteraction)
+    }
+  }, [handleTap])
+
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className={`${STAGE_SIZE[size]} relative`} aria-label={`Sprite: ${stageName}`}>
-        <SpriteSVG stage={stage} reaction={reaction} animateIn={animateIn} transitioning={showTransition} />
+    <div className="flex flex-col items-center gap-1 relative">
+      {/* Tap bubble */}
+      {tapBubble && (
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 animate-bubble-in whitespace-nowrap pointer-events-none">
+          <div className="bg-slate-800/95 backdrop-blur rounded-2xl px-4 py-2 border border-slate-600/50 shadow-xl">
+            <span className="text-sm">{tapBubble.emoji}</span>
+            <span className="text-slate-200 text-sm ml-1 font-medium">{tapBubble.text}</span>
+          </div>
+          <div className="w-3 h-3 bg-slate-800/95 border-r border-b border-slate-600/50 rotate-45 mx-auto -mt-1.5" />
+        </div>
+      )}
+
+      <div
+        ref={wrapperRef}
+        className={`${STAGE_SIZE[size]} relative touch-manipulation select-none ${tapAnim ? 'animate-bounce' : ''}`}
+        aria-label={`精灵: ${stageName}，点击互动`}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTap() } }}
+        style={{ cursor: 'pointer' }}
+      >
+        <div style={{ pointerEvents: 'none' }}>
+          <SpriteSVG stage={stage} reaction={reaction} animateIn={animateIn} transitioning={showTransition} />
+        </div>
       </div>
       <span className="text-xs text-slate-400">{stageName}</span>
+      {!tapBubble && (
+        <span className="text-[10px] text-slate-600 animate-pulse pointer-events-none select-none">戳戳我~</span>
+      )}
     </div>
   )
 }

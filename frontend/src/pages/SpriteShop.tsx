@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import { BackButton } from '../components/common/BackButton'
 
 interface SkinInfo {
   key: string
@@ -76,12 +78,12 @@ export function SpriteShop() {
     setTimeout(() => setMessage(''), 3000)
   }
 
-  if (loading) return <div className="card text-center py-8"><p className="text-slate-400 text-sm">加载中...</p></div>
+  if (loading) return <LoadingSpinner />
 
   return (
     <div className="space-y-5 animate-slide-up pb-8">
       <header className="flex items-center justify-between pt-2">
-        <button onClick={() => navigate(-1)} className="text-slate-400 text-sm min-h-[44px] px-2">← 返回</button>
+        <BackButton />
         <h1 className="text-lg font-bold">精灵商店</h1>
         <span className="text-yellow-400 text-sm">⭐{coins}</span>
       </header>

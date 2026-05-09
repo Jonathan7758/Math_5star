@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from backend.main import app
+from backend.store import store
 
 client = TestClient(app)
 
@@ -28,6 +29,7 @@ class TestRewardsAPI:
         assert data["sprite_reaction"] in ("encourage", "thinking")
 
     def test_process_reward_achievement(self):
+        store.clear_achievements(102)
         r = client.post("/api/rewards/process?student_id=102&is_correct=true&combo=1")
         assert r.status_code == 200
         data = r.json()
@@ -35,8 +37,8 @@ class TestRewardsAPI:
 
     def test_process_reward_level_up(self):
         for i in range(10):
-            client.post(f"/api/rewards/process?student_id=200&is_correct=true&combo=3&time_spent=2")
-        r = client.get("/api/rewards/status?student_id=200")
+            client.post(f"/api/rewards/process?student_id=103&is_correct=true&combo=3&time_spent=2")
+        r = client.get("/api/rewards/status?student_id=103")
         data = r.json()
         assert data["level"] >= 2
 

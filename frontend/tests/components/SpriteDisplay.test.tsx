@@ -5,7 +5,7 @@ import { SpriteDisplay } from '../../src/components/sprite/SpriteDisplay'
 describe('SpriteDisplay', () => {
   it('renders stage 0 star dust', () => {
     render(<SpriteDisplay stage={0} stageName="星尘" reaction="idle" size="sm" />)
-    expect(screen.getByLabelText('Sprite: 星尘')).toBeInTheDocument()
+    expect(screen.getByLabelText('精灵: 星尘，点击互动')).toBeInTheDocument()
     expect(screen.getByText('星尘')).toBeInTheDocument()
   })
 
@@ -16,10 +16,10 @@ describe('SpriteDisplay', () => {
 
   it('renders in different sizes', () => {
     const { rerender } = render(<SpriteDisplay stage={0} stageName="星尘" reaction="idle" size="sm" />)
-    const el = screen.getByLabelText('Sprite: 星尘')
+    const el = screen.getByLabelText('精灵: 星尘，点击互动')
     expect(el.closest('.w-12')).toBeTruthy()
 
     rerender(<SpriteDisplay stage={0} stageName="星尘" reaction="idle" size="lg" />)
-    expect(screen.getByLabelText('Sprite: 星尘').closest('.w-32')).toBeTruthy()
+    expect(screen.getByLabelText('精灵: 星尘，点击互动').closest('.w-32')).toBeTruthy()
   })
 })

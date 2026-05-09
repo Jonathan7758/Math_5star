@@ -56,7 +56,7 @@ describe('DiagnoseReportPage', () => {
   it('shows total and incorrect counts', () => {
     renderAt('/diagnose-report', { report: sampleReport })
     expect(screen.getByText(/共.*10.*题/)).toBeInTheDocument()
-    expect(screen.getByText(/4.*题错误/)).toBeInTheDocument()
+    expect(screen.getAllByText(/4.*题错误/).length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders priority badges', () => {

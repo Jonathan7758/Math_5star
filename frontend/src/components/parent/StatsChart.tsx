@@ -1,3 +1,5 @@
+import { formatDate } from '../../utils/format'
+
 interface WeeklyStat {
   date: string
   minutes: number
@@ -7,12 +9,6 @@ interface WeeklyStat {
 
 interface StatsChartProps {
   data: WeeklyStat[]
-}
-
-function formatDate(d: string): string {
-  const parts = d.split('-')
-  if (parts.length === 3) return `${parts[1]}/${parts[2]}`
-  return d
 }
 
 export function StatsChart({ data }: StatsChartProps) {

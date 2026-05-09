@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from backend.config import QUIZ_BANK_PATH, KNOWLEDGE_GRAPH_PATH
 from backend.engine.knowledge_graph import KnowledgeGraph
 from backend.agents.teaching_agent import TeachingAgent, QuestionData
+from backend.agents.storyteller_agent import storyteller
 from backend.store import store
 
 router = APIRouter()
@@ -43,6 +44,8 @@ class NextQuestionResponse(BaseModel):
     options: list[str] | None = None
     question_type: str = "numeric"
     kp_name: str = ""
+    story_question: str | None = None
+    story_icon: str | None = None
 
 
 class SubmitAnswerRequest(BaseModel):
@@ -95,7 +98,35 @@ async def next_question(student_id: int | None = None, kp_id: str | None = None)
         options=q.get("options"),
         question_type=q.get("type", "numeric"),
         kp_name=kp_name,
+        story_question=None,  # Frontend calls /api/exercise/story for this
+        story_icon=None,
     )
+
+
+class StoryRequest(BaseModel):
+    question_id: str
+    question_text: str
+    theme: str | None = None
+
+
+@router.post("/api/exercise/story")
+async def get_story(req: StoryRequest):
+    """Get a storytelling version of a question."""
+    result = await storyteller.get_story(req.question_id, req.question_text, req.theme)
+    return {
+        "success": True,
+        "story_question": result["story_question"],
+        "theme": result["theme"],
+        "theme_name": result["theme_name"],
+        "theme_icon": result["theme_icon"],
+        "generated": result["generated"],
+    }
+
+
+@router.get("/api/exercise/themes")
+async def get_themes():
+    """Get available storytelling themes."""
+    return {"success": True, "themes": storyteller.get_themes()}
 
 
 @router.post("/api/exercise/submit", response_model=SubmitAnswerResponse)
@@ -137,7 +168,7 @@ async def submit_answer(req: SubmitAnswerRequest):
 
     return SubmitAnswerResponse(
         is_correct=result.is_correct,
-        correct_answer=result.correct_answer,
+        correct_answer=str(result.correct_answer),
         xp_earned=result.xp_earned,
         hint=result.hint,
         hint_level=result.hint_level,

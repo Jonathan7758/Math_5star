@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { MasteryHeatmap } from '../components/parent/MasteryHeatmap'
 import { StatsChart } from '../components/parent/StatsChart'
 import { KnowledgeGraph } from '../components/parent/KnowledgeGraph'
+import { BackToHomeButton } from '../components/common/BackButton'
+import { StatCard } from '../components/common/StatCard'
 import { useAppStore } from '../store/appStore'
 
 export function ParentDashboardPage() {
@@ -96,9 +98,7 @@ export function ParentDashboardPage() {
           </button>
         </div>
 
-        <button onClick={() => navigate('/')} className="btn-secondary w-full">
-          返回首页
-        </button>
+        <BackToHomeButton />
       </div>
     )
   }
@@ -116,18 +116,9 @@ export function ParentDashboardPage() {
       {dashboard && (
         <>
           <div className="grid grid-cols-3 gap-3">
-            <div className="card text-center py-3">
-              <div className="text-2xl font-bold text-primary-400">{dashboard.mastery_heatmap?.filter((h: any) => h.score >= 0.6).length ?? 0}</div>
-              <div className="text-xs text-slate-500">已掌握</div>
-            </div>
-            <div className="card text-center py-3">
-              <div className="text-2xl font-bold text-yellow-400">{dashboard.streak_days}</div>
-              <div className="text-xs text-slate-500">连胜天</div>
-            </div>
-            <div className="card text-center py-3">
-              <div className="text-2xl font-bold text-green-400">{dashboard.total_xp}</div>
-              <div className="text-xs text-slate-500">总XP</div>
-            </div>
+            <StatCard value={dashboard.mastery_heatmap?.filter((h: any) => h.score >= 0.6).length ?? 0} label="已掌握" />
+            <StatCard value={dashboard.streak_days} label="连胜天" />
+            <StatCard value={dashboard.total_xp} label="总XP" />
           </div>
 
           <div className="card">

@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { BackToHomeButton } from '../components/common/BackButton'
 
 interface RootCause {
   kp_id: string
@@ -56,15 +57,35 @@ export function DiagnoseReportPage() {
       </header>
 
       {report.root_causes.length === 0 ? (
-        <div className="card text-center py-8 space-y-3">
+        <div className="card text-center py-8 space-y-3 border border-green-500/20 bg-gradient-to-b from-green-500/5 to-slate-900/80">
           <div className="text-5xl">🎉</div>
           <p className="text-lg font-semibold text-green-400">没有发现明显断点！</p>
-          <p className="text-slate-400 text-sm">
-            基础扎实，继续保持！
-          </p>
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <span className="text-slate-300">正确率</span>
+            <span className="text-green-400 font-bold text-lg">
+              {Math.round((1 - report.incorrect_count / Math.max(report.total_records, 1)) * 100)}%
+            </span>
+          </div>
         </div>
       ) : (
         <>
+          {/* Score overview */}
+          <div className="card flex items-center gap-4 border border-slate-700/50">
+            <div className="w-16 h-16 rounded-full border-4 border-primary-500 flex items-center justify-center"
+              role="progressbar" aria-valuenow={Math.round((1 - report.incorrect_count / Math.max(report.total_records, 1)) * 100)}
+              aria-valuemin={0} aria-valuemax={100}>
+              <span className="text-lg font-bold text-primary-400">
+                {Math.round((1 - report.incorrect_count / Math.max(report.total_records, 1)) * 100)}%
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-semibold">诊断结果</p>
+              <p className="text-slate-400 text-sm">
+                发现 <span className="text-orange-400 font-bold">{report.root_causes.length}</span> 个薄弱点
+                · {report.total_records}题中{report.incorrect_count}题错误
+              </p>
+            </div>
+          </div>
           <p className="text-sm text-slate-400">
             以下是系统发现的知识薄弱点，按优先级排序：
           </p>
@@ -119,9 +140,7 @@ export function DiagnoseReportPage() {
         <button onClick={() => navigate('/diagnose')} className="btn-secondary w-full">
           重新诊断
         </button>
-        <button onClick={() => navigate('/')} className="btn-secondary w-full">
-          返回首页
-        </button>
+        <BackToHomeButton />
       </div>
     </div>
   )

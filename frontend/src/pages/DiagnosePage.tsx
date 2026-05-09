@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuizStore } from '../store/quizStore'
 import { useAppStore } from '../store/appStore'
+import { SpriteDisplay } from '../components/sprite/SpriteDisplay'
+import { QuestionCardEnhanced } from '../components/exercise/QuestionCardEnhanced'
 
 export function DiagnosePage() {
   const navigate = useNavigate()
   const sid = useAppStore(s => s.activeStudentId)
-  const { currentQuestion, selectedAnswer, feedback, isSubmitting, diagnoseRecords, setQuestion, selectAnswer, setFeedback, setSubmitting, addDiagnoseRecord, clearDiagnoseRecords, resetQuiz } = useQuizStore()
+  const { currentQuestion, selectedAnswer, feedback, isSubmitting, diagnoseRecords, setQuestion, selectAnswer, setFeedback, setSubmitting, addDiagnoseRecord, resetQuiz } = useQuizStore()
+  const [spriteReaction, setSpriteReaction] = useState<'idle' | 'happy' | 'thinking' | 'encourage' | 'celebrate' | 'excited'>('idle')
 
   const fetchNext = async () => {
     setSubmitting(true)
@@ -13,6 +17,7 @@ export function DiagnosePage() {
       const res = await fetch(`/api/exercise/next?student_id=${sid}`)
       const data = await res.json()
       setQuestion(data)
+      setSpriteReaction('idle')
     } finally {
       setSubmitting(false)
     }
@@ -43,6 +48,8 @@ export function DiagnosePage() {
         kp_id: currentQuestion.knowledge_point_id,
         is_correct: data.is_correct,
       })
+      setSpriteReaction(data.is_correct ? 'happy' : 'thinking')
+      setTimeout(() => setSpriteReaction('idle'), 2500)
     } finally {
       setSubmitting(false)
     }
@@ -65,24 +72,34 @@ export function DiagnosePage() {
   }
 
   const questionCount = diagnoseRecords.length
+  const MIN_QUESTIONS = 5
 
   if (!currentQuestion) {
     return (
       <div className="space-y-6 animate-slide-up">
         <header className="text-center pt-4">
-          <h1 className="text-2xl font-bold">知识诊断</h1>
+          <div className="flex justify-center mb-3">
+            <SpriteDisplay stage={0} stageName="星尘" reaction="idle" size="md" animateIn />
+          </div>
+          <h1 className="text-2xl font-bold text-white">知识诊断</h1>
           <p className="text-slate-400 text-sm mt-1">
-            完成下面的题目，系统将找出你的知识断点
+            启小星帮你找出需要加强的知识点
           </p>
         </header>
 
-        <div className="card text-center py-8 space-y-4">
+        <div className="card text-center py-8 space-y-4 border border-slate-700/50 bg-gradient-to-b from-slate-800/80 to-slate-900/80">
           <div className="text-5xl">🔍</div>
-          <p className="text-slate-300">准备开始诊断测试</p>
-          <p className="text-slate-500 text-sm">
-            包含 {questionCount} 个知识点的代表题目
-          </p>
-          <button onClick={fetchNext} disabled={isSubmitting} className="btn-primary w-full">
+          <div>
+            <p className="text-white font-semibold text-lg">准备好了吗？</p>
+            <p className="text-slate-400 text-sm mt-1">
+              系统会根据你的答题情况，找出薄弱环节
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 text-xs text-slate-500">
+            <span>📝 覆盖20个知识点</span>
+            <span>⏱️ 约5-10分钟</span>
+          </div>
+          <button onClick={fetchNext} disabled={isSubmitting} className="btn-primary w-full text-base">
             {isSubmitting ? '加载中...' : '开始诊断'}
           </button>
         </div>
@@ -91,89 +108,52 @@ export function DiagnosePage() {
   }
 
   return (
-    <div className="space-y-4 animate-slide-up">
-      <header className="flex items-center justify-between pt-2">
-        <h1 className="text-lg font-bold">知识诊断</h1>
-        <span className="text-slate-400 text-sm">
-          第 {questionCount} 题
-        </span>
+    <div className="space-y-3 animate-slide-up pb-6">
+      {/* Header */}
+      <header className="flex items-center justify-between pt-3 pb-1">
+        <div className="flex items-center gap-2">
+          <SpriteDisplay stage={0} stageName="星尘" reaction={spriteReaction} size="sm" />
+          <div>
+            <h1 className="text-base font-bold text-white">知识诊断</h1>
+            <span className="text-xs text-slate-500">已答 {questionCount} 题</span>
+          </div>
+        </div>
+        <button onClick={finishDiagnostic} disabled={isSubmitting || questionCount < MIN_QUESTIONS} className="text-xs text-primary-400 bg-primary-500/10 px-3 py-1.5 rounded-full border border-primary-500/20 disabled:opacity-30 min-h-[36px]">
+          {questionCount < MIN_QUESTIONS ? `还需${MIN_QUESTIONS - questionCount}题` : '完成诊断'}
+        </button>
       </header>
 
-      <div className="card space-y-4">
-        <p className="text-lg text-white leading-relaxed">{currentQuestion.question}</p>
+      {/* Question */}
+      <QuestionCardEnhanced
+        question={currentQuestion}
+        selectedAnswer={selectedAnswer}
+        onSelect={(opt) => !feedback && selectAnswer(opt)}
+        feedback={feedback}
+        hintLevel={0}
+        questionIndex={questionCount + 1}
+        totalQuestions={Math.max(MIN_QUESTIONS, questionCount + 1)}
+        mode="diagnose"
+      />
 
-        {currentQuestion.question_type === 'multiple_choice' && currentQuestion.options ? (
-          <div className="space-y-2">
-            {currentQuestion.options.map((opt: string, i: number) => {
-              const isSelected = selectedAnswer === opt
-              let cls = 'w-full text-left p-3 rounded-xl border border-slate-700 min-h-[44px] transition-colors '
-              if (isSelected && !feedback) cls += 'bg-primary-500/20 border-primary-500 text-primary-300 '
-              else if (isSelected && feedback?.is_correct) cls += 'bg-green-500/20 border-green-500 text-green-300 '
-              else if (isSelected && feedback && !feedback.is_correct) cls += 'bg-red-500/20 border-red-500 text-red-300 '
-              else if (feedback) cls += 'text-slate-600 '
-              else cls += 'hover:border-slate-500 hover:bg-slate-700/50 text-slate-300 '
-
-              return (
-                <button
-                  key={i}
-                  onClick={() => !feedback && selectAnswer(opt)}
-                  disabled={!!feedback}
-                  className={cls}
-                >
-                  {opt}
-                </button>
-              )
-            })}
-          </div>
-        ) : (
-          <input
-            type="text"
-            inputMode="decimal"
-            value={selectedAnswer ?? ''}
-            onChange={(e) => selectAnswer(e.target.value)}
-            disabled={!!feedback}
-            placeholder="输入答案..."
-            aria-label="输入答案"
-            className="w-full p-3 rounded-xl border bg-slate-900 min-h-[48px] text-white text-lg text-center border-slate-700 focus:border-primary-500"
-          />
-        )}
-
-        {feedback?.is_correct && (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-green-400 text-sm" role="status">
-            正确！
-          </div>
-        )}
-        {feedback?.hint && !feedback.is_correct && (
-          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 text-orange-400 text-sm" role="status">
-            {feedback.hint}
-          </div>
-        )}
-        {feedback && !feedback.is_correct && feedback.explanation && (
-          <div className="bg-slate-700/50 rounded-xl p-3 text-slate-300 text-sm" role="status">
-            {feedback.explanation}
-          </div>
-        )}
-      </div>
-
+      {/* Action buttons */}
       {!feedback ? (
         <button
           onClick={submit}
           disabled={!selectedAnswer || isSubmitting}
-          className="btn-primary w-full"
+          className="btn-primary w-full text-base"
         >
           {isSubmitting ? '检查中...' : '提交答案'}
         </button>
       ) : (
-        <div className="space-y-3">
-          <button onClick={fetchNext} disabled={isSubmitting} className="btn-primary w-full">
+        <div className="space-y-2.5">
+          <button onClick={fetchNext} disabled={isSubmitting} className="btn-primary w-full text-base">
             {isSubmitting ? '加载...' : '下一题'}
           </button>
-          <button
-            onClick={finishDiagnostic}
-            className="btn-secondary w-full"
-          >
-            完成诊断 ({diagnoseRecords.length} 题已答)
-          </button>
+          {questionCount >= MIN_QUESTIONS && (
+            <button onClick={finishDiagnostic} className="btn-secondary w-full">
+              完成诊断
+            </button>
+          )}
         </div>
       )}
     </div>

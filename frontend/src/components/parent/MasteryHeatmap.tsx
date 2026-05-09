@@ -1,3 +1,6 @@
+import { masteryScoreColor } from '../../utils/mastery'
+import { EmptyState } from '../common/EmptyState'
+
 interface HeatmapItem {
   kp_id: string
   kp_name: string
@@ -13,17 +16,9 @@ interface MasteryHeatmapProps {
   selectedKp?: string | null
 }
 
-function scoreColor(score: number): string {
-  if (score >= 0.8) return 'bg-green-500 text-white'
-  if (score >= 0.6) return 'bg-green-400/80 text-white'
-  if (score >= 0.4) return 'bg-yellow-500 text-white'
-  if (score > 0) return 'bg-orange-500 text-white'
-  return 'bg-slate-700 text-slate-500'
-}
-
 export function MasteryHeatmap({ data, onItemClick, selectedKp }: MasteryHeatmapProps) {
   if (data.length === 0) {
-    return <div className="text-center text-slate-500 py-8">暂无掌握度数据</div>
+    return <EmptyState icon="📊" message="暂无掌握度数据" />
   }
 
   return (
@@ -46,7 +41,7 @@ export function MasteryHeatmap({ data, onItemClick, selectedKp }: MasteryHeatmap
             <button
               key={item.kp_id}
               onClick={() => onItemClick?.(item)}
-              className={`${scoreColor(item.score)} rounded-lg p-2 text-xs min-h-[56px] flex flex-col justify-between transition-all text-left ${
+              className={`${masteryScoreColor(item.score)} rounded-lg p-2 text-xs min-h-[56px] flex flex-col justify-between transition-all text-left ${
                 onItemClick ? 'cursor-pointer hover:scale-[1.03] hover:shadow-lg' : ''
               } ${isSelected ? 'ring-2 ring-white scale-[1.03] shadow-lg' : ''}`}
             >

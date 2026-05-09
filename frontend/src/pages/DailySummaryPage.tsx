@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { SpriteDisplay } from '../components/sprite/SpriteDisplay'
 import { ShareCard } from '../components/gamification/ShareCard'
+import { BackToHomeButton } from '../components/common/BackButton'
 
 interface SummaryData {
   questionsAnswered: number
@@ -96,9 +97,7 @@ export function DailySummaryPage() {
         <button onClick={() => navigate('/quiz')} className="btn-secondary w-full">
           继续练习
         </button>
-        <button onClick={() => navigate('/')} className="btn-secondary w-full">
-          返回首页
-        </button>
+        <BackToHomeButton />
       </div>
 
       {showShare && (

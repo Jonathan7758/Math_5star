@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { masteryScoreHex } from '../../utils/mastery'
+import { groupBy } from '../../utils/array'
+import { EmptyState } from '../common/EmptyState'
 
 interface GraphNode {
   kp_id: string
@@ -24,29 +27,16 @@ interface LayoutNode {
   node: GraphNode
 }
 
-function scoreColor(score: number): string {
-  if (score >= 0.8) return '#22c55e'
-  if (score >= 0.6) return '#4ade80'
-  if (score >= 0.4) return '#eab308'
-  if (score > 0) return '#f97316'
-  return '#475569'
-}
-
 export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
   const [tooltip, setTooltip] = useState<{ x: number; y: number; node: GraphNode } | null>(null)
 
   if (!data || data.nodes.length === 0) {
-    return <div className="text-center text-slate-500 py-8">暂无知识图谱数据</div>
+    return <EmptyState icon="🧭" message="暂无知识图谱数据" />
   }
 
   const gradeOrder: Record<string, number> = { Y7: 0, Y8: 1, Y9: 2 }
 
-  const grouped: Record<string, GraphNode[]> = {}
-  for (const n of data.nodes) {
-    const g = n.grade
-    if (!grouped[g]) grouped[g] = []
-    grouped[g].push(n)
-  }
+  const grouped = groupBy(data.nodes, (n) => n.grade)
   const grades = Object.keys(grouped).sort((a, b) => (gradeOrder[a] ?? 0) - (gradeOrder[b] ?? 0))
 
   const layoutMap = new Map<string, LayoutNode>()
@@ -138,7 +128,7 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
         })}
 
         {Array.from(layoutMap.values()).map((ln) => {
-          const color = scoreColor(ln.node.score)
+          const color = masteryScoreHex(ln.node.score)
           return (
             <g
               key={ln.node.kp_id}

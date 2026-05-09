@@ -102,7 +102,7 @@ class SharedStore:
         mastery.total_attempts = (mastery.total_attempts or 0) + 1
         if is_correct:
             mastery.correct_attempts = (mastery.correct_attempts or 0) + 1
-        mastery.mastery_score = mastery.correct_attempts / max(mastery.total_attempts, 1)
+        mastery.mastery_score = (mastery.correct_attempts or 0) / max(mastery.total_attempts, 1)
         mastery.last_practiced_at = datetime.now(timezone.utc).replace(tzinfo=None)
         s.commit()
 
@@ -253,6 +253,13 @@ class SharedStore:
             )
             s.add(ach)
             s.commit()
+
+    def clear_achievements(self, student_id: int):
+        s = self._session()
+        s.query(AchievementModel).filter(
+            AchievementModel.student_id == student_id,
+        ).delete()
+        s.commit()
 
     def get_sprite_stage_info(self, student_id: int) -> dict:
         sprite = self.get_sprite(student_id)

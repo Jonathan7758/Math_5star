@@ -1,0 +1,29 @@
+name: math_5star
+description: 数学启明星 - Android Game-based Math Tutor
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flame: ^1.18.0
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.1.0
+  audioplayers: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/audio/
+    - shorebird.yaml

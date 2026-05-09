@@ -1,0 +1,8 @@
+{
+  "version": "1.0.1",
+  "version_code": 2,
+  "apk_url": "/flutter/app-release.apk",
+  "apk_size": 22033665,
+  "release_notes": "Shorebird热更新已启用; 设置页版本号更新; APK自动下载安装",
+  "min_version_code": 1
+}

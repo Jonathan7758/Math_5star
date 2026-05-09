@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuizStore } from '../store/quizStore'
 import { useAppStore } from '../store/appStore'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import { BackToHomeButton } from '../components/common/BackButton'
 
 interface PathNode {
   order: number
@@ -44,11 +46,7 @@ export function LearningPathPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-pulse text-slate-400">生成学习路径中...</div>
-      </div>
-    )
+    return <LoadingSpinner text="生成学习路径中..." />
   }
 
   return (
@@ -97,9 +95,7 @@ export function LearningPathPage() {
         </div>
       )}
 
-      <button onClick={() => navigate('/')} className="btn-secondary w-full">
-        返回首页
-      </button>
+      <BackToHomeButton />
     </div>
   )
 }

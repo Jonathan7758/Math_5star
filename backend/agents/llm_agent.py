@@ -69,7 +69,8 @@ Important rules:
 
             result = json.loads(content)
 
-            is_valid, error = MathVerifier.verify(
+            # Verify: extract math from question, compute true answer, compare
+            is_valid = MathVerifier.verify_question_answer(
                 result.get("question", ""),
                 result.get("correct_answer", ""),
             )

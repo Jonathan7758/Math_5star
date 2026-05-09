@@ -1,0 +1,225 @@
+# design010.txt — GAP Analysis & Next Development Plan
+## Generated: 2026-05-09 | Current UX: 7.3/10 | Target: 8.0/10 (design009)
+
+---
+
+## STATUS OVERVIEW
+
+v1.0 all features implemented. 200 quiz questions, 30 achievements, 7 skins, 5 sprite stages.
+React app comprehensive. Flutter app has only 5 basic screens.
+200 quiz questions confirmed (AGENTS.md incorrectly says 48 — needs update).
+
+---
+
+## PRIORITY 0: Storyteller & Math Rendering (3-6h)
+
+### 0.1 Storyteller Frontend Integration
+Backend done: storyteller_agent.py, /api/exercise/story, /api/exercise/themes
+Frontend: QuizPage.tsx — ZERO references to story/theme/storyteller.
+Need to: fetch theme list on quiz start, pick random theme, call /story endpoint,
+render themed question card with backdrop, integrate QuestionCardEnhanced.
+
+### 0.2 True MathJax Rendering
+Current: MathText.tsx uses simple regex to detect $...$ and wraps in styled spans.
+MathJax 3.2.2 is in devDependencies but NEVER IMPORTED in src/.
+Need to: import MathJax, dangerously render formulas through MathJax.typeset(),
+replace MathText.tsx with proper math rendering for fractions, equations, symbols.
+
+---
+
+## PRIORITY 1: design009 Phase 2 — New Quiz Interaction Types (1-2 weeks)
+
+All 6 types are unimplemented. Current: only numeric-input + multiple-choice.
+
+### 1.1 Shooting-style MC (攻靶选择)
+Options displayed as targets (floating circles/objects). Click = fire projectile at answer.
+Particle hit effect on correct target. Most feasible to implement first.
+
+### 1.2 Drag-to-Order (拖拽排序)
+Show shuffled solution steps. Drag to arrange in correct order. Submit order for verification.
+Quiz bank needs "order" type questions added.
+
+### 1.3 Number-line Slider (数轴滑块)
+Display number line axis. Drag marker to answer position. Need for fraction/comparison questions.
+
+### 1.4 Line-Matching (连线匹配)
+Left column: expressions. Right column: results. Draw lines to connect matches.
+Quiz bank needs "match" type questions.
+
+### 1.5 Geometry Dragging (几何拖拽)
+Drag angles/edges/vertices to correct positions. Canvas-based.
+Most complex — depends on geometry KP questions.
+
+### 1.6 Spinning Wheel (转盘)
+Dial pointer to correct answer. Rotary interaction. Gamification-heavy.
+
+---
+
+## PRIORITY 1: design009 Phase 3 — Animation System Upgrade (1 week)
+
+All 5 advanced animations unimplemented. Current animations: CSS keyframes only.
+
+### 3.1 Skill Cast Animation
+Correct answer: sprite shoots energy ray → hits monster target → explosion particles.
+Requires: Canvas overlay, flame/beam rendering, particle burst on impact.
+
+### 3.2 Damage Reaction
+Wrong answer: screen flash red (50ms) + Camera2D shake + heart shatter SVG animation.
+Heart UI element: cracks → splits → falls off.
+
+### 3.3 Level-Up Transformation
+Sprite full-body golden glow + morphology change (next stage) + spin 360°.
+Combine: CSS glow filter + CSS transform rotate + sprite stage swap at midpoint.
+
+### 3.4 Stage Complete Settlement Panel
+Fireworks (exists) + falling star particles + settlement panel slide-up from bottom.
+Panel: XP earned, coins, new achievements unlocked, combo streak preserved.
+
+### 3.5 Treasure Chest Open
+Shake animation (CSS wiggle) → opens → golden light rays (CSS radial-gradient) → item/card pops out with scale-up.
+Triggered on: milestone achievements, daily goal complete, level-up.
+
+---
+
+## PRIORITY 1: design009 Phase 3 — Full Sound System (3-5 days)
+
+Current: sound.ts with Web Audio API synthesized tones only (correct/incorrect/achievement).
+
+Need:
+- Background music files (at least 3 themes: math dungeon, space adventure, cozy learning)
+- Preload + play/pause control
+- Per-scene BGM: quiz BGM, home BGM, parent dashboard BGM
+- Sound effects: button click, page transition (swipe), treasure chest open, star coins collect, XP collect
+- Volume mixer: BGM volume + SFX volume sliders in settings
+- Mute toggle
+
+---
+
+## PRIORITY 1: Flutter Feature Parity — Core (1-2 weeks)
+
+Flutter app missing many v1.0 features. Focus on most visible:
+
+### 4.1 Flutter: Achievements Page
+Backend API: GET /api/health/achievements already exists.
+Create achievements_screen.dart: 30 badges grid, locked/unlocked states, category grouping.
+Wire to rewards/status API.
+
+### 4.2 Flutter: Sprite Shop
+Backend API: POST /api/sprite/buy-skin, /api/health/skins already exists.
+Create sprite_shop_screen.dart: 7 skins grid, buy/equip buttons, star coins display.
+
+### 4.3 Flutter: Daily Summary + Share Card
+Create daily_summary_screen.dart: 4-grid stats (questions/accuracy/XP/streak),
+celebrate animation, share card (screenshot or text share).
+
+### 4.4 Flutter: Onboarding
+Create onboarding_screen.dart: 3-slide tutorial, page indicator dots,
+localStorage-gated (shared_preferences), swipe navigation.
+
+---
+
+## PRIORITY 2: Review Agents CI/CD Integration (2-3 days)
+
+run_review.py is standalone. Need to:
+1. Add review job to .github/workflows/test.yml
+2. Set score thresholds (PASS ≥ 7.0, WARN ≥ 5.0, FAIL < 5.0)
+3. Post review report as PR comment via GitHub Actions
+4. Block merge on FAIL verdicts
+5. Wire arbiter scoring formula: UX×0.3 + A11y×0.1 + Perf×0.1 + Content×0.2 + Kid×0.3
+
+---
+
+## PRIORITY 2: Flutter Feature Parity — Extended (2 weeks)
+
+### 6.1 Flutter: Knowledge Graph
+Backend API: GET /api/parent/graph exists.
+Create knowledge_graph_widget.dart: interactive SVG/Canvas nodes, grade-level grouping,
+tap-to-expand detail cards, mastery color mapping.
+
+### 6.2 Flutter: Stats Charts
+Backend API: GET /api/parent/dashboard provides weekly_stats.
+Create stats_chart_widget.dart: trend lines (SVG polyline) + bar chart.
+
+### 6.3 Flutter: Drag-to-Reorder Path
+Backend API: POST /api/parent/approve-path.
+Add drag-to-reorder to parent_screen.dart: ReorderableListView or custom drag handle.
+
+### 6.4 Flutter: Offline Queue + Push
+Backend API: POST /api/push/register, /api/exercise/submit.
+Create offline_queue.dart: shared_preferences cache, connectivity listener, auto-sync.
+Create push_service.dart: Firebase Cloud Messaging or local notifications.
+
+---
+
+## PRIORITY 3: Infrastructure & Polish
+
+### 7.1 Quiz Bank Expansion to 500+
+Current: 200 questions. Target: 500+ via LLM pipeline (/api/llm/generate-question).
+Script: scripts/expand_quiz_bank.py already exists. Run in batches of 50, verify with SymPy.
+
+### 7.2 Create Python venv
+Currently using global pip. Need: python -m venv backend/venv, install all deps.
+Update AGENTS.md activation instructions.
+
+### 7.3 Fix AGENTS.md Discrepancies
+- "48 quiz questions" → "200 quiz questions"
+- "LLM configured but NOT connected" → "LLM connected (DeepSeek API)"
+- "venv: not created yet" → update after creating venv
+
+### 7.4 Achievement Expansion 30 → 50
+Current: 30 achievements (design008). Target: 50+ (design002).
+Easy wins: more speed variants (2s/1s), more streak milestones (60/90/180),
+knowledge-specific badges (algebra master, geometry master).
+
+---
+
+## WORK ORDER (Recommended Sequence)
+
+```
+Session 1 (3-6h):     P0.1 Storyteller frontend + P0.2 MathJax rendering
+Session 2 (4-8h):     P1.1 Shooting-style MC quiz type
+Session 3 (4-8h):     P1.2 Drag-to-order quiz type
+Session 4 (4-8h):     P1.3 Number-line slider quiz type
+Session 5 (4-8h):     P1.1 Skill cast + Damage reaction animations
+Session 6 (4-8h):     P1.2 Level-up + Settlement + Treasure chest animations
+Session 7 (4-8h):     P1.3 Full sound system (BGM + SFX)
+Session 8 (4-8h):     P1.4 Flutter achievements + skin shop
+Session 9 (4-8h):     P1.5 Flutter daily summary + onboarding
+Session 10 (4-8h):    P2.1 Review agents CI/CD
+Session 11 (8-16h):   P2.2 Flutter graph + charts + drag path
+Session 12 (4-8h):    P2.3 Flutter offline + push
+Session 13 (4-8h):    P3.1 Quiz bank 500+
+Session 14 (2-4h):    P3.2 venv + docs + achievements 30→50
+```
+
+---
+
+## CROSS-REFERENCE: Feature x Design Doc Map
+
+| Feature | Spec | Implemented | GAP |
+|--------|------|------------|-----|
+| Quiz types (6) | design009 P2 | 2 of 6 | -4 |
+| Advanced animations (5) | design009 P3 | 0 of 5 | -5 |
+| Full sound system | design009 P3 | Partial (tones only) | BGM + collect + UI |
+| Storyteller integration | design009 P1 | Backend only | Frontend |
+| MathJax rendering | design008 | Imported, not used | True rendering |
+| Review agents CI/CD | design009 P4 | Script only | Automation |
+| Achievements (50+) | design002 | 30 | -20 |
+| Quiz questions (2000) | design001 | 200 | -1800 |
+| Flutter feature parity | AGENTS.md | 5 screens | -10 features |
+| venv | AGENTS.md | Not created | Setup |
+
+---
+
+## DESIGN DOC INDEX
+
+- design001.txt — Original project brief (architecture, scope, timeline)
+- design002.txt — Deep design (UX, sprite, API contract, tests, 33 components)
+- design003.txt — UX audit v0.6 (3.6/10, 20-item roadmap)
+- design004.txt — UX review round 1 v0.7 (5.4/10, SharedStore, hearts, combo)
+- design005.txt — UX review round 2 v0.8 (6.0/10, KG viz, onboarding, XP fly)
+- design006.txt — UX review round 3 v0.9 (6.6/10, trend lines, fireworks, share card)
+- design007.txt — UX review final v1.0 (7.0/10, a11y, push E2E, drag path, LLM)
+- design008.txt — GAP filled v1.1 (7.3/10, achievements 30, skin shop, CI/CD, mastery calc)
+- design009.txt — v2.0 design (storyteller, 6 quiz types, 5 animations, sound, 5 review agents)
+- design010.txt — THIS FILE (GAP analysis + next dev plan)

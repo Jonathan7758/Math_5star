@@ -105,3 +105,72 @@
 .animate-wiggle {
   animation: wiggle 2s ease-in-out infinite;
 }
+
+/* Math rendering styles */
+.math-content {
+  font-size: inherit;
+  line-height: 1.8;
+}
+
+.math-inline {
+  display: inline;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  background: rgba(245, 158, 11, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fbbf24;
+}
+
+.math-block {
+  display: block;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1.1em;
+  background: rgba(245, 158, 11, 0.06);
+  border-left: 3px solid rgba(245, 158, 11, 0.3);
+  padding: 12px 16px;
+  margin: 8px 0;
+  border-radius: 0 8px 8px 0;
+  color: #fcd34d;
+  text-align: center;
+}
+
+/* Question card entrance animation */
+@keyframes question-enter {
+  0% { opacity: 0; transform: translateY(12px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-question-enter {
+  animation: question-enter 0.35s ease-out forwards;
+}
+
+/* Progress bar fill animation */
+@keyframes progress-fill {
+  from { width: 0%; }
+}
+
+.animate-progress-fill {
+  animation: progress-fill 0.6s ease-out forwards;
+}
+
+/* Correct answer pulse */
+@keyframes correct-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+.animate-correct-pulse {
+  animation: correct-pulse 1.5s ease-out;
+}
+
+/* Encouragement bubble */
+@keyframes bubble-in {
+  0% { opacity: 0; transform: scale(0.8) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-bubble-in {
+  animation: bubble-in 0.3s ease-out forwards;
+}
