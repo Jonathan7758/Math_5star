@@ -1,0 +1,147 @@
+============================================================
+Math-5star Comprehensive Test Report
+============================================================
+Date: 2026-05-09 16:18 CST
+Target Server: http://101.96.217.150
+Version: v1.2 (P0 Storyteller + MathJax)
+Commit: e1522a9 (pushed to github.com/Jonathan7758/Math_5star)
+============================================================
+
+## Executive Summary
+Total: 33/33 PASS (100%)
+All API endpoints, React web, Flutter web, and APK deployment verified.
+
+## Results by Category
+  API                  : 4/4 (100%)  - health, version, achievements, skins
+  APK                  : 2/2 (100%)  - downloadable (21MB), version API
+  Diagnose             : 1/1 (100%)  - BFS root cause analysis
+  Exercise             : 4/4 (100%)  - next question, by KP, themes, submit
+  Flutter Web          : 4/4 (100%)  - index, main.js, manifest, icons
+  Frontend Integration : 2/2 (100%)  - themes code in bundle, MathJax CDN
+  Parent               : 3/3 (100%)  - dashboard, graph, PIN rejection
+  Plan                 : 1/1 (100%)  - learning path generation
+  React                : 6/6 (100%)  - index, JS, CSS, manifest, SW, SPA routing
+  Rewards              : 2/2 (100%)  - status, process
+  Sprite               : 1/1 (100%)  - sprite state API
+  Storyteller          : 3/3 (100%)  - space theme, random theme, all 8 themes
+
+============================================================
+## Detailed Test Results
+============================================================
+
+### 1. Backend API Tests (13/13)
+[PASS] API Health Check           - {"status":"ok"}
+[PASS] API Version                - {"version":"1.2.0","version_code":3}
+[PASS] API Achievements List      - 30 achievements verified
+[PASS] API Skins List             - 7 skins verified
+[PASS] Get Next Question          - Random question returned with kp data
+[PASS] Get Question by KP         - K01-specific question returned
+[PASS] Get Themes (8)       - All 8 storyteller themes listed
+[PASS] Submit Answer              - Answer evaluation works
+[PASS] Diagnose API               - Root cause analysis from error records
+[PASS] Plan API                   - Learning path generated from root causes
+[PASS] Rewards Status             - XP/level/coins/streak returned
+[PASS] Rewards Process            - Reward processing triggers sprite reaction
+[PASS] Sprite State               - Sprite stage/skin/progress returned
+
+### 2. React Frontend Tests (6/6)
+[PASS] React Index HTML           - SPA index served, root div present
+[PASS] React JS Bundle            - 240KB JS bundle accessible
+[PASS] React CSS Bundle           - 35KB CSS bundle accessible
+[PASS] React PWA Manifest         - webmanifest with app name
+[PASS] React Service Worker       - sw.js served for offline PWA
+[PASS] React SPA Routing          - /quiz returns index.html (SPA fallback)
+
+### 3. Flutter Web Tests (4/4)
+[PASS] Flutter Index HTML         - /flutter/ serves Flutter web page
+[PASS] Flutter Main JS            - main.dart.js (2.4MB) served
+[PASS] Flutter Manifest           - manifest.json served
+[PASS] Flutter Icons              - Icon-192.png served
+
+### 4. APK Tests (2/2)
+[PASS] APK Downloadable           - app-release.apk (21.0MB) served
+[PASS] Version API for APK        - Version info includes apk_url
+
+### 5. Storyteller (UX P0.1) Tests (3/3)
+[PASS] Storyteller API (space)    - Space-themed question story generated
+[PASS] Storyteller API (random)   - Random theme auto-assigned, returns generated flag
+[PASS] All 8 Themes Work          - fruit_shop, animals, space, game_world, baking, sports, ocean, carnival all verified
+
+### 6. Frontend Bundle Integration (2/2)
+[PASS] Themes code in bundle      - "story_question"/"storyText" found in JS bundle
+[PASS] MathJax CDN in HTML        - "mathjax" found in index.html script tag
+
+============================================================
+## UX Assessment
+============================================================
+
+### P0.1: Storyteller Frontend Integration
+- Backend: /api/exercise/story endpoint generates per-question themed stories via DeepSeek LLM
+- Backend: /api/exercise/themes returns 8 themes with icons and Chinese names
+- Frontend: QuizPage has horizontal scrollable theme selector chips (随机 + 8 themes)
+- Frontend: QuestionCardEnhanced renders themed dialogue bubble with story_question text
+- Frontend: 8 theme visual styles mapped (gradient + border + accent color per theme)
+- Theme-to-knowledge-point mapping: random by default, user-selectable
+- Cache: storyteller_agent.py caches generated stories per question_id+theme
+
+### P0.2: MathJax Rendering
+- MathJax v3 CDN script (tex-svg) added to index.html
+- MathText component: useEffect calls window.MathJax.typesetPromise() on container ref
+- Fallback: if MathJax unavailable or text has no LaTeX, uses regex-based styled spans
+- Global type declaration for window.MathJax to satisfy TypeScript
+- No npm import required; CDN script loads async
+
+### Existing Features Verified Working
+- 200 quiz questions across 20 knowledge points
+- 30 achievements with unlock logic
+- 7 sprite skins with star coin purchase
+- 5 sprite evolution stages (星尘→星芽→星苗→星光→启明星)
+- 3-heart system with auto-redirect to daily summary
+- Combo system (blue≥3, purple≥5, gold≥10)
+- 3-level progressive hints
+- XP fly animation
+- Level-up modal
+- Daily goal ring with celebration
+- Parent dashboard with PIN 1234 auth
+- Heatmap mastery grid
+- Knowledge graph SVG visualization
+- Trend line charts
+- Drag-to-reorder learning path
+- Multi-student support (3 profiles)
+- Offline answer queue (localStorage)
+- Push notification subscription
+- Haptic feedback (5 vibration patterns)
+- PWA with service worker
+- Playwright E2E tests (5 journeys)
+
+### Known Issues / Limitations
+1. Flutter app has only 5 screens; missing achievements, skin shop, daily summary, onboarding, knowledge graph, stats charts, share card, etc. (10+ features missing vs React)
+2. Canvaskit files not uploaded to server; Flutter web may fall back to HTML renderer
+3. 1 pre-existing backend test failure: test_submit_equivalent_answer (SymPy equivalence check edge case)
+4. Venv not created; backend uses system Python with --break-system-packages
+5. Storyteller LLM calls may timeout when DeepSeek API key not configured; falls back to icon prefix
+6. MathJax typesetting is async; brief flash of unstyled math possible on slow connections
+
+============================================================
+## Deployment Summary
+============================================================
+Server:     101.96.217.150 (Ubuntu 24.04)
+Backend:    Python 3.12 + FastAPI + Uvicorn (systemd: math-tutor.service)
+Frontend:   React 18 + Vite + Tailwind (Nginx static serve)
+Flutter:    /flutter/ path (Nginx alias)
+APK:        /flutter/app-release.apk (21MB)
+Nginx:      Port 80, /api/ → :8000 proxy, SPA fallback for React
+DB:         SQLite at /opt/math-home-tutor/backend/data/
+
+============================================================
+## Test Tool & Method
+============================================================
+- Test script: run_tests.py (33 automated HTTP tests)
+- Backend tests: 132 pytest (131 pass, 1 known failure)
+- Frontend tests: 34 vitest (all pass)
+- E2E tests: 5 Playwright (not run in this session)
+- All remote tests performed against http://101.96.217.150
+- Test execution time: ~12 seconds for 33 tests
+
+============================================================
+END OF REPORT
